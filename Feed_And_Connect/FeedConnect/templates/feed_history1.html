@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Feed & Connect - Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+
+            body {
+                background-image: url("{% static 'images/resources/fongfong.jpg' %}");
+                color: #ffffff;
+                background-size: 100% auto; /* Changed from cover to contain */
+                background-repeat: no-repeat;
+                background-position: center;
+                background-attachment: fixed; /* Optional: adds a nice parallax effect */
+                min-height: 100vh;
+                margin: 0;
+            }
+        
+            .btn-style {
+                display: inline-block;
+                padding: 6px 10px;
+                background: white;
+                color: #000; /* your blue */
+                font-weight: bold;
+                border-radius: 7px;
+                text-decoration: none;
+                cursor: pointer;
+                text-transform: uppercase;
+                box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+                border: none;
+                transform: skew(-25deg);
+                transition: all 0.3s ease;
+                margin-left: 10px;
+            }
+
+            .btn-style span {
+                display: block;
+                transform: skew(25deg);
+                color: inherit;
+            }
+
+            .btn-style:hover {
+                background: #eee;
+                color: #495057;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            }
+            #scrollTopBtn {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                display: none;
+                background-color: #000;
+                color: white;
+                width: 50px;
+                height: 50px;
+                border: none;
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                z-index: 1000;
+                transition: background-color 0.3s ease;
+                font-size: 20px;
+                text-align: center;
+            }
+
+            #scrollTopBtn:hover {
+                background-color: #343a40;
+            }
+
+            #scrollTopBtn i {
+                line-height: 50px; /* center icon vertically */
+                color: white;
+            }
+
+            .custom-table {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .table-header, .table-row {
+                display: flex;
+                flex-direction: row;
+            }
+
+            .table-header {
+                background-color: rgba(0, 0, 0, 0.6); /* Darker transparent for header */
+                font-weight: bold;
+                color: white;
+                padding: 10px 0;
+            }
+
+            .table-row.odd {
+                background-color: rgba(80, 80, 80, 0.4); /* Slightly darker than before */
+            }
+
+            .table-row.even {
+                background-color: rgba(60, 60, 60, 0.4); /* Even row slightly darker too */
+            }
+
+            .table-cell {
+                flex: 1;
+                padding: 10px;
+                color: white;
+                text-align: left;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+
+
+    </style>
+</head>
+
+<div class="container py-5">
+
+    <!-- Header and buttons in one row, aligned horizontally -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0" style="font-weight: bold; color: white;">Feed History</h2>
+        <div>
+            <a href="{% url 'dashboard_1' %}" class="btn-style"><span>Controls</span></a>
+            <a href="{% url 'index' %}" class="btn-style"><span>Social Media</span></a>
+            <a href="{% url 'marketplace' %}" class="btn-style"><span>E-Commerce</span></a>
+            <a href="{% url 'feed_history1' %}" class="btn-style"><span>Feed History</span></a>
+            <a href="{% url 'feed_history' %}" class="btn-style"><span>BMI</span></a>
+
+        </div>
+    </div>
+
+            <div class="custom-table">
+            <div class="table-header">
+                <div class="table-cell">Timestamp</div>
+                <div class="table-cell">Feed Type</div>
+                <div class="table-cell">Amount (grams)</div>
+            </div>
+
+            {% for feed in feed_history %}
+                <div class="table-row {% cycle 'odd' 'even' %}">
+                <div class="table-cell">{{ feed.timestamp|date:"M d, Y, h:i A" }}</div>
+                <div class="table-cell">{{ feed.feed_type }}</div>
+                <div class="table-cell">{{ feed.amount }}</div>
+                </div>
+            {% endfor %}
+            </div>
+
+    <button onclick="scrollToTop()" id="scrollTopBtn">⇈</button>
+    <script>
+        window.onscroll = function () {
+    const btn = document.getElementById("scrollTopBtn");
+    btn.style.display = window.scrollY > 200 ? "block" : "none";
+};
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+    </script>
+    {% comment %} <a href="{% url 'dashboard_1' %}" style="background-color: #4a6fa1; color: white; padding: 10px 20px; border: none; border-radius: 5px; text-decoration: none;">Back to Dashboard</a>
+    <a href="{% url 'main page' %}" style="background-color: #4a6fa1; color: white; padding: 10px 20px; border: none; border-radius: 5px; text-decoration: none;">Back</a> {% endcomment %}
+
+</body>
+</html>

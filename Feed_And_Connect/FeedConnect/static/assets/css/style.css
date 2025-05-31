@@ -2496,7 +2496,7 @@ header .uk-dropdown {
 }
 
 .upload-button {
-  background-color: #012169; /* Tailwind's pink-500 */
+  background-color: #495057; /* Tailwind's pink-500 */
   display: inline-flex;
   font-weight: bold;
   display: none; /* hidden by default, shown on large screens */
@@ -2512,7 +2512,7 @@ header .uk-dropdown {
 }
 
 .upload-button:hover {
-  background-color: #005A9C; /* Tailwind's pink-600 */
+  background-color: #343a40; /* Tailwind's pink-600 */
   color: white;
 }
 
@@ -2547,25 +2547,25 @@ header .uk-dropdown {
 }
 
 .dropdown-box {
-  background-color: #B9D9EB;
+  background-color: #7f7f7f;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(1, 33, 105, 0.1);
   max-width: 400px;
   font-family: sans-serif;
-  color: #012169;
+  color: black;
 }
 
 .dropdown-header, .dropdown-footer {
   padding: 1rem;
-  background-color: #aecddd;
+  background-color: white;
   border-bottom: 2px solid #88b0cc;
   font-weight: bold;
 }
 
 .dropdown-footer {
-  border-top: 2px solid #88b0cc;
+  border-top: 2px solid gray;
   font-size: 0.85rem;
-  color: #012169;
+  color: #212529;
 }
 
 .dropdown-content {
@@ -2615,8 +2615,8 @@ header .uk-dropdown {
 }
 
 .upload-btn, .import-btn {
-  background-color: #012169;
-  color: white;
+  background-color: white;
+  color: #212529;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
@@ -2626,8 +2626,8 @@ header .uk-dropdown {
 }
 
 .upload-btn:hover, .import-btn:hover {
-  background-color: #88b0cc;
-  color: #012169;
+  background-color: #575a5e;
+  color: white;
 }
 
 .toggle-link {
@@ -2640,14 +2640,18 @@ header .uk-dropdown {
 }
 
 .profile-dropdown {
-  background-color: #B9D9EB;
+  background-color: rgba(80, 80, 80, 0.45); /* darker and more opaque */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(1, 33, 105, 0.1);
   max-width: 220px;
   padding: 1rem 0;
   font-family: sans-serif;
-  color: #012169;
+  color: white;
 }
+
+
 
 .profile-dropdown-list {
   list-style: none;
@@ -2662,19 +2666,19 @@ header .uk-dropdown {
 .profile-link {
   display: block;
   padding: 0.75rem 1rem;
-  color: #012169;
+  color: white;
   text-decoration: none;
   transition: background-color 0.2s, color 0.2s;
 }
 
 .profile-link:hover {
-  background-color: #88b0cc;
+  background-color: gray;
   color: white;
   border-radius: 4px;
 }
 
 .blue-button {
-  background-color: #012169; /* Deep navy blue */
+  background-color: #212529; /* Deep navy blue */
   color: white;
   padding: 0.75rem 1.5rem; /* py-3 px-6 */
   border-radius: 0.375rem; /* rounded-md */
@@ -2685,12 +2689,12 @@ header .uk-dropdown {
 }
 
 .blue-button:hover {
-  background-color: #005A9C; /* Slightly lighter blue on hover */
+  background-color: #6c757d; /* Slightly lighter blue on hover */
   color: white;
 }
 
 .form-action-bar {
-  background-color: #A3C0D5; /* Light gray similar to bg-gray-10 */
+  background-color: gray; /* Light gray similar to bg-gray-10 */
   padding: 1.5rem;
   padding-top: 0;
   display: flex;
@@ -2699,8 +2703,8 @@ header .uk-dropdown {
 }
 
 .cancel-btn {
-  background-color: #f0f0f0; /* Equivalent to bg-gray-50 */
-  color: #012169; /* Tailwind's red-500 */
+  background-color: #fff; /* Equivalent to bg-gray-50 */
+  color: #343a40; /* Tailwind's red-500 */
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.375rem;
@@ -2710,7 +2714,7 @@ header .uk-dropdown {
 }
 
 .cancel-btn:hover {
-  background-color: #e5e5e5;
+  background-color: #e7ecef;
 }
 
 .cancel-btn a {
@@ -2719,7 +2723,7 @@ header .uk-dropdown {
 }
 
 .save-btn {
-  background-color: #012169; /* Your deep blue */
+  background-color: #343a40; /* Your deep blue */
   color: white;
   padding: 0.5rem 1rem;
   border: none;
@@ -2730,7 +2734,7 @@ header .uk-dropdown {
 }
 
 .save-btn:hover {
-  background-color: #005A9C;
+  background-color: #495057;
 }
 
 .view-user-btn {

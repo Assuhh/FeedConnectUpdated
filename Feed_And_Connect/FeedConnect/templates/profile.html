@@ -11,14 +11,18 @@
     <meta name="keywords" content="" />
 	<title>Profile - {{user_profile.user.username}}</title>
    <!-- <link rel="icon" href="images/fav.png" type="image/png" sizes="16x16"> -->
-    
+    <!-- Add this only if not already included -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.20.7/dist/css/uikit.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/uikit@3.20.7/dist/js/uikit.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/uikit@3.20.7/dist/js/uikit-icons.min.js"></script>
+
     <link rel="stylesheet" href="{% static 'css/main.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/color.css' %}">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
 
 </head>
-<body style="background: linear-gradient(to right, #cce5f6, #003366); min-height: 100vh; margin: 0;">
+<body style="background: linear-gradient(to right, #dee2e6, gray); min-height: 100vh; margin: 0;">
 
 
 <!--<div class="se-pre-con"></div>-->
@@ -29,44 +33,79 @@
 	<section>
 		
 			<div class="feature-photo">
-				<a href="javascript:history.back()" 
-   style="position: fixed; top: 20px; left: 20px; background-color: #012169; color: white; font-weight: bold; text-decoration: none; padding: 10px 16px; border-radius: 6px; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 999;">
+				<a href="/index" 
+   style="position: absolute; top: 20px; left: 20px; background-color: gray; color: white; font-weight: bold; text-decoration: none; padding: 10px 16px; border-radius: 6px; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 999;">
    &#8592;
 </a>
 
+
 <figure style="width: 100%; height: 100%; margin: 0; overflow: hidden;">
-    <img src="{% static 'images/resources/poww.jpg' %}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+    <img src="{% static 'images/resources/humanpow.jpg' %}" alt="" style="width: 100%; height: 300px; object-fit: cover; opacity: 0.8; border-radius: 8px;">
 </figure>
 
-				<form action="/follow" method="POST">
-					{% csrf_token %}
-					<div class="add-btn">
-					<span style="color: #000080; font-size: 27px; margin-right: 380px;"><b><u><a href="{% url 'index' %}">Home</a></u></b></span>
-					{% if user_post_length == 0 %}
-					<span style="color: #0E3386; font-size: 27px;"><b>No Post</b></span>
-					{% elif user_post_length == 1 %}
-					<span style="color: #0E3386; font-size: 27px;"><b>{{user_post_length}} Post</b></span>
-					{% else %}
-					<span style="color: #0E3386; font-size: 27px;"><b>{{user_post_length}} Posts</b></span>
-					{% endif %}
+				
 
-					{% if user_followers == 0 or user_followers == 1 %}
-					<span style="color: #0E3386; font-size: 27px;"><b>{{user_followers}} follower</b></span>
-					{% else %}
-					<span style="color: #0E3386; font-size: 27px;"><b>{{user_followers}} followers</b></span>
-					{% endif %}
-					
+{% if user_object.username == user.username %}
+  <!-- Upload Modal (Outside any form!) -->
+  <div id="upload-modal" uk-modal>
+    <div class="uk-modal-dialog uk-modal-body" style="background-color: gray; border-radius: 8px; padding: 20px;">
+      <h4 style="margin-top: 0; color: white;">Upload Pics</h4>
 
-					<span style="color: #0E3386; font-size: 27px;"><b>{{user_following}} following</b></span>
+      <form action="/upload" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="margin-bottom: 15px;">
+          <input type="file" name="image_upload" class="uk-input" style="margin-bottom: 10px;" required>
+          <textarea name="caption" placeholder="caption..." class="uk-textarea" style="height: 60px; margin-bottom: 10px;"></textarea>
+          <button type="submit" class="uk-button uk-button-primary" style="background-color: #e5e6e4; color: black;">Upload</button>
+        </div>
+      </form>
 
-					<input type="hidden" value="{{user.username}}" name="follower" />
-					<input type="hidden" value="{{user_object.username}}" name="user" />
+      <p style="font-size: 12px; color: white; margin-top: 10px;">Your image size must be under 100MB</p>
+    </div>
+  </div>
+{% endif %}
 
-					{% if user_object.username == user.username %}
-					<a href="/settings" data-ripple="">Account Settings</button></a>
-					{% else %}
-					<a data-ripple=""><button type="submit" style="background-color: #ffc0cb; border: #ffc0cb;">{{button_text}}</button></a>
-					{% endif %}
+<!-- Prevent link jump on uk-toggle -->
+<script>
+  document.querySelectorAll('a[uk-toggle]').forEach(el => {
+    el.addEventListener('click', e => e.preventDefault());
+  });
+
+  document.querySelector('#upload-modal form').addEventListener('submit', async function(e) {
+  e.preventDefault(); // Prevent default form submit
+
+  const form = e.target;
+  const formData = new FormData(form);
+
+  try {
+    const response = await fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+
+    if (response.ok) {
+      alert('Upload successful!');
+      
+      // Close modal
+      UIkit.modal(document.getElementById('upload-modal')).hide();
+
+      // Reload page to show new post
+      location.reload();
+
+    } else {
+      alert('Upload failed. Please try again.');
+    }
+  } catch (error) {
+    alert('Error: ' + error.message);
+  }
+});
+</script>
+
+
+
 
 					</div>
 				</form>
@@ -78,6 +117,7 @@
 					<input type="file"/>
 					</label>
 				</form> -->
+				
 				<div class="container-fluid">
 					<div class="row merged">
 						<div class="col-lg-2 col-sm-3">
@@ -94,10 +134,48 @@
 							</div>
 						</div>
 						<div class="col-lg-10 col-sm-9">
+					<form action="/follow" method="POST">
+					{% csrf_token %}
+					<input type="hidden" name="follower" value="{{user.username}}">
+					<input type="hidden" name="user" value="{{user_object.username}}">
+  
+							<div class="add-btn" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center; margin: 30px 60;">
+					
+					<span style="color: #fff; font-size: 27px; margin-right: 220px;">
+						<b><u><a href="{% url 'index' %}" style="color: white; text-decoration: none;">Home</a></u></b>
+					</span>
+
+					{% if user_post_length == 0 %}
+						<span style="color: #fff; font-size: 27px;"><b>No Post</b></span>
+					{% elif user_post_length == 1 %}
+						<span style="color: #fff; font-size: 27px;"><b>{{user_post_length}} Post</b></span>
+					{% else %}
+						<span style="color: #fff; font-size: 27px;"><b>{{user_post_length}} Posts</b></span>
+					{% endif %}
+
+					{% if user_followers == 0 or user_followers == 1 %}
+						<span style="color: #fff; font-size: 27px;"><b>{{user_followers}} follower</b></span>
+					{% else %}
+						<span style="color: #fff; font-size: 27px;"><b>{{user_followers}} followers</b></span>
+					{% endif %}
+
+					<span style="color: #fff; font-size: 27px;"><b>{{user_following}} following</b></span>
+
+					<div style="margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap;">
+						{% if user_object.username == user.username %}
+						<a href="/settings" style="background-color: pink; color: #000; padding: 8px 16px; border-radius: 5px; text-decoration: none;">Account Settings</a>
+						<a href="#" uk-toggle="target: #upload-modal" style="background-color: pink; color: #000; padding: 8px 16px; border-radius: 5px; text-decoration: none;">Upload Post</a>
+						{% else %}
+						<button type="submit" style="background-color: #ffc0cb; border: #ffc0cb;">{{button_text}}</button>
+						{% endif %}
+					</div>
+					</div>
+
+							</form>
 							<div class="timeline-info">
 								<ul>
 									<li class="admin-name">
-									  <h5 style="color: navy;white-space: nowrap; width: 110px; font-size: 27px;"><b>@{{user_profile.user.username}}</b><!--<i class="fa fa-check-circle" style="color: #48dbfb;" aria-hidden="true"></i>--></h5>
+									  <h5 style="color: black;white-space: nowrap; width: 110px; font-size: 27px;"><b>@{{user_profile.user.username}}</b><!--<i class="fa fa-check-circle" style="color: #48dbfb;" aria-hidden="true"></i>--></h5>
 									  <!--<span>Group Admin</span>-->
 									</li>
 									<!--<li>
@@ -123,11 +201,14 @@
 				</div>
 			</div>
 		</section><!-- top area -->
+		
 		<section>
-			<div class="bio">
-				{{user_profile.bio}}
+			<div class="bio" style="color: #000;">
+				{{ user_profile.bio }}
 			</div>
+			
 		</section>
+		
 		
 	<section>
 		<div class="gap gray-bg">
@@ -154,32 +235,32 @@
 
 							<div class="col-lg-6">
 								<div class="central-meta">
-									<ul class="photos">
-					
-										{% for post in user_posts %}
+								<h4 style="color: black; margin-bottom: 20px;"><b>My Posts</b></h4>
+
+								{% for post in user_posts %}
+								<div class="uk-card uk-card-default uk-card-body" style="margin-bottom: 20px; border-radius: 10px;">
+									<div class="uk-flex uk-flex-middle uk-margin-bottom">
+										<img src="{{ user_profile.profileimg.url }}" alt="profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 10px;">
+										<div>
+											<strong style="color: black;">@{{ user_profile.user.username }}</strong><br>
+											<small style="color: gray;">{{ post.created_at|date:"F j, Y, g:i a" }}</small>
+										</div>
+									</div>
 									{% if post.image %}
-											<li>
-												<a class="strip" href="{{ post.image.url }}" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
-													<img src="{{ post.image.url }}" style="height: 250px; width: 300px;" alt="">
-												</a>
-											</li>
-										{% endif %}
-									{% endfor %}
+									<a href="{{ post.image.url }}" uk-lightbox>
+									<img src="{{ post.image.url }}" alt="Post Image" style="width: 100%; border-radius: 10px; margin-bottom: 10px;">
+									</a>
+									{% endif %}
+									<p style="color: black;">{{ post.caption }}</p>
+								</div>
+								{% endfor %}
 
-										{% comment %} <li>
-											<a class="strip" href="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
-												<img src="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" style="height: 250px; width: 300px;" alt=""></a>
-										</li>
+								{% if user_posts|length == 0 %}
+								<p style="color: black;">No posts to show.</p>
+								{% endif %}
+							</div>
 
-										<li>
-											<a class="strip" href="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
-												<img src="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" style="height: 250px; width: 300px;" alt=""></a>
-										</li> {% endcomment %}
-										
-										
-									</ul>
-									<!--<div class="lodmore"><button class="btn-view btn-load-more"></button></div>-->
-								</div><!-- photos -->
+
 							</div><!-- centerl meta -->
 							<div class="col-lg-3">
 								<aside class="sidebar static">

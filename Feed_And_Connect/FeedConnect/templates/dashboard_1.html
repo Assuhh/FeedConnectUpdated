@@ -1,0 +1,395 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Feed & Connect - Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background-image: url("{% static 'images/resources/pusakal.jpg' %}");
+            color: #ffffff;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .btn-style {
+            display: inline-block;
+            padding: 6px 10px;
+            background: white;
+            color: #000;
+            font-weight: bold;
+            border-radius: 7px;
+            text-decoration: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            border: none;
+            transform: skew(-25deg);
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        .btn-style span {
+            display: block;
+            transform: skew(25deg);
+            color: inherit;
+        }
+        .btn-style:hover {
+            background: #eee;
+            color: #495057;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        .slider {
+            width: 100%;
+        }
+        .feed-button {
+            width: 100%;
+            background-color: #6c757d;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .feed-button:hover {
+            background-color: #8f969d;
+            transform: translateY(-2px);
+        }
+        .feed-button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        .status-card {
+            background-color: rgba(30, 30, 30, 0.8);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .next-feeding {
+            font-size: 1.2em;
+            color: #00C853;
+            font-weight: bold;
+        }
+        .schedule-count {
+            color: #ffc107;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-round {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider-round:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider-round {
+            background-color: #00C853;
+        }
+        input:checked + .slider-round:before {
+            transform: translateX(26px);
+        }
+        .form-control {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            color: #ffffff;
+        }
+        .form-control:focus {
+            background-color: #2d2d2d;
+            border-color: #fff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(122, 122, 122, 0.3);
+        }
+        .save-button {
+        background: linear-gradient(45deg,  #7a7a7a, #b0b0b0); /* smooth, stylish gray gradient */
+        border: none;
+        color: white;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        }
+
+        .save-button:hover {
+        background: linear-gradient(45deg,  #b0b0b0, #969696); /* reversed on hover for effect */
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(122, 122, 122, 0.3); /* soft shadow */
+        }
+
+    </style>
+</head>
+<body>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0" style="font-weight: bold;">Feed & Connect</h2>
+    <div>
+        <a href="{% url 'dashboard_1' %}" class="btn-style"><span>Controls</span></a>
+        <a href="{% url 'index' %}" class="btn-style"><span>Social Media</span></a>
+        <a href="{% url 'marketplace' %}" class="btn-style"><span>E-Commerce</span></a>
+        <a href="{% url 'feed_history1' %}" class="btn-style"><span>Feed History</span></a>
+        <a href="{% url 'feed_history' %}" class="btn-style"><span>BMI</span></a>
+        {% comment %} <a href="{% url 'logout' %}" class="btn-style"><span>Logout</span></a> {% endcomment %}
+    </div>
+</div>
+
+    <h2 class="mb-4 text-center">🐾 Feed Controller</h2>
+
+    <!-- Alerts -->
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            <strong>
+                {% if message.tags == 'success' %}✅{% elif message.tags == 'error' or message.tags == 'danger' %}❌{% else %}ℹ️{% endif %}
+            </strong>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Status Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="status-card">
+                <h5>Next Feeding</h5>
+                <div class="next-feeding" id="nextFeeding">{{ next_feeding_time }}</div>
+                <small class="text-white">
+                    {% if schedule_active %}
+                        Schedule is ON
+                    {% else %}
+                        Schedule is OFF
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="status-card">
+                <h5>Active Schedules</h5>
+                <div class="schedule-count" id="scheduleCount">{{ schedule_count }}</div>
+                <small class="text-white">
+                {% if schedule_count == 1 %}
+                    feeding time set
+                {% else %}
+                    feeding times set
+                {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feeder Form -->
+    <form method="POST" id="feederForm">
+        {% csrf_token %}
+
+        <!-- Portion Size -->
+        <div class="status-card mb-4">
+            <label for="portion" class="form-label">🥣 Portion Size</label>
+            <div id="portionValueLabel">Selected: {{ last_portion }}g</div>
+            <input type="range" id="portion" name="portion" min="10" max="500" value="{{ last_portion }}" 
+                    class="form-range slider" oninput="updatePortionLabel()">
+            <div class="d-flex justify-content-between text-small text-white mt-1">
+                <span>10g</span>
+                <span>500g</span>
+            </div>
+        </div>
+
+        <!-- Feed Now -->
+        {% comment %} <form method="post"> {% endcomment %}
+        <button type="submit" name="feed_now" class="feed-button" onclick="return confirm('Feed now?');">🍽️ FEED NOW</button>
+         {% comment %} </form>  {% endcomment %}
+
+        <!-- Schedule Section -->
+        <div class="status-card">
+            <h4 class="mb-3">⏰ Feeding Schedule</h4>
+
+            <div class="text-center mb-4">
+                <label for="schedule_toggle" class="form-label">
+                    Schedule Status: 
+                    <span id="scheduleStatus" class="{% if schedule_active %}text-success{% else %}text-warning{% endif %}">
+                        {% if schedule_active %}ON{% else %}OFF{% endif %}
+                    </span>
+                </label><br>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="schedule_toggle" name="schedule_toggle" value="1"
+                        {% if schedule_active %}checked{% endif %} onchange="updateScheduleStatus()">
+                    <span class="slider-round"></span>
+                </label>
+                <div class="small text-white mt-2">
+                    Toggle to enable/disable automatic feeding</div>
+            </div>
+
+            <div class="row mb-4">
+                {% for time in feeding_times %}
+                <div class="col-6 mb-3">
+                    <label for="schedule_time{{ forloop.counter }}" class="form-label">
+                        Feeding Time {{ forloop.counter }}
+                    </label>
+                    <input type="time" id="schedule_time{{ forloop.counter }}" name="schedule_time{{ forloop.counter }}" 
+                            class="form-control" value="{{ time }}" 
+                            onchange="updateSchedulePreview()">
+                </div>
+                {% endfor %}
+            </div>
+
+           <div class="mb-3" id="schedulePreview">
+                <small class="text-white">
+                    <strong>Preview:</strong> <span id="previewText">
+                        Set times above to see schedule
+                    </span>
+                </small>
+            </div>
+
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-lg save-button" id="saveButton">
+                    💾 Save Schedule Settings
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Debug Info (remove in production) -->
+    {% if debug %}
+    <div class="mt-4 p-3" style="background-color: #2d2d2d; border-radius: 5px; font-family: monospace; font-size: 0.8em;">
+        <strong>Debug Info:</strong><br>
+        Schedule Active: {{ schedule_active }}<br>
+        Feeding Times: {{ feeding_times }}<br>
+        Schedule Count: {{ schedule_count }}<br>
+        Next Feeding: {{ next_feeding_time }}
+    </div>
+    {% endif %}
+</div>
+
+    {% comment %} <div class="text-center mt-4">
+        <a href="{% url 'feed_history1' %}" class="btn btn-outline-light">📊 View Feed History</a>
+    </div> {% endcomment %}
+</div>
+
+<script>
+    // Function to update the portion size label dynamically
+    function updatePortionLabel() {
+        var portion = document.getElementById('portion').value;
+        var portionValueLabel = document.getElementById('portionValueLabel');
+        portionValueLabel.textContent = 'Selected: ' + portion + 'g';
+    }
+
+    // Function to update schedule status text and styling
+    function updateScheduleStatus() {
+        var toggle = document.getElementById('schedule_toggle');
+        var status = document.getElementById('scheduleStatus');
+        
+        if (toggle.checked) {
+            status.textContent = 'ON';
+            status.className = 'text-success';
+        } else {
+            status.textContent = 'OFF';
+            status.className = 'text-warning';
+        }
+        updateSchedulePreview();
+    }
+
+    // Function to update schedule preview
+    function updateSchedulePreview() {
+        var times = [];
+        var isActive = document.getElementById('schedule_toggle').checked;
+        
+        for (var i = 1; i <= 4; i++) {
+            var timeInput = document.getElementById('schedule_time' + i);
+            if (timeInput.value) {
+                times.push(timeInput.value);
+            }
+        }
+        
+        var previewText = document.getElementById('previewText');
+        
+        if (!isActive) {
+            previewText.textContent = 'Schedule is OFF - no automatic feeding';
+            previewText.className = 'text-warning';
+        } else if (times.length === 0) {
+            previewText.textContent = 'No feeding times set';
+            previewText.className = 'text-muted';
+        } else {
+            previewText.textContent = 'Will feed at: ' + times.sort().join(', ');
+            previewText.className = 'text-success';
+        }
+    }
+
+    // Confirm feed action
+    function confirmFeed() {
+    console.log("Feed button clicked");
+    return confirm("Are you sure you want to feed now?");
+}
+
+    // Add loading state to buttons
+    function setLoading(isLoading) {
+        var form = document.getElementById('feederForm');
+        var feedButton = document.getElementById('feedButton');
+        var saveButton = document.getElementById('saveButton');
+        
+        if (isLoading) {
+            form.classList.add('loading');
+            feedButton.disabled = true;
+            saveButton.disabled = true;
+            feedButton.textContent = '🔄 Feeding...';
+            saveButton.textContent = '🔄 Saving...';
+        } else {
+            form.classList.remove('loading');
+            feedButton.disabled = false;
+            saveButton.disabled = false;
+            feedButton.textContent = '🍽️ FEED NOW';
+            saveButton.textContent = '💾 Save Schedule Settings';
+        }
+    }
+
+    // Handle form submission with loading states
+    document.getElementById('feederForm').addEventListener('submit', function() {
+        setLoading(true);
+        // Loading state will be removed when page reloads
+    });
+
+    // Initialize on page load
+    window.onload = function() {
+        updatePortionLabel();
+        updateScheduleStatus();
+        updateSchedulePreview();
+    };
+
+    // Auto-refresh next feeding time every minute
+    setInterval(function() {
+        // Only refresh if schedule is active
+        var scheduleActive = document.getElementById('schedule_toggle').checked;
+        if (scheduleActive) {
+            // In a real implementation, you might want to fetch this via AJAX
+            console.log('Would refresh next feeding time');
+        }
+    }, 60000); // 60 seconds
+</script>
+</div>
+</body>
+</html>

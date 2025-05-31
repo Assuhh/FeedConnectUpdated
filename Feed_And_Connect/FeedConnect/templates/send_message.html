@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="message-container">
+        <h2 style="color: #000;">Send a Message</h2>
+        
+        <h3 style="color: #000;">Conversation with {{ conversation.participants.all|join:", " }}</h3>
+
+        {% if item_type == "product" %}
+            <h4 style="color: #000;">Product: {{ item.name }}</h4>
+        {% elif item_type == "service" %}
+            <h4 style="color: #000">Service: {{ item.name }}</h4>
+        {% endif %}
+        
+        <!-- Message Form -->
+        <form method="POST" action="{% url 'send_message' receiver_id=receiver.id item_type=item_type item_id=item.id %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="content">Message</label>
+                <textarea id="content" name="content" rows="4" placeholder="Write your message..." required></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+    </div>
+
+    <style>
+        .message-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(249, 249, 249, 0.6); /* Transparent light gray */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .message-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .message-container h3 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .message-container h4 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #777;
+        }
+
+        .form-group label {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            resize: vertical;
+        }
+
+        .btn {
+            width: 100%;
+            background-color: rgba(30, 30, 30, 0.4); /* lighter, more transparent */
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff; /* white text */
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: rgba(20, 20, 20, 0.6); /* darker but still transparent */
+        }
+
+    </style>
+{% endblock %}

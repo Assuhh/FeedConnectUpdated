@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Feed-Commerce{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            padding-top: 70px;
+            
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            background-color: #f8f9fa;
+            text-align: center;
+        }
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background-image: url("{% static 'images/resources/cloth.jpg' %}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: -2; /* Stay behind everything */
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            color: white;
+
+        }
+        .product-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        
+
+
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+    <body>
+    <div class="background-overlay"></div>
+    {% comment %} <div class="background-darken"></div> {% endcomment %}
+    <div class="content-wrapper">
+
+
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: rgba(128, 128, 128, 0.6);">
+
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'dashboard' %}">Feed-Commerce</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="{% url 'marketplace' %}" style="color: #fff;">Marketplace</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'post_item' %}" style="color: #fff;">Post Item</a></li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'my_listings' %}" style="color: #fff;">My Listings</a></li>
+                 {% endif %}
+                {% comment %} <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_1' %}">Dashboard</a></li> {% endcomment %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'inbox' %}" style="color: #fff">Inbox</a></li>
+                {% comment %} {% if user.is_authenticated %} {% endcomment %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_1' %}" style="color: #fff">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}" style="color: #fff">Logout</a></li>
+                {% comment %} {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'signin' %}">Sign In</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Sign Up</a></li>
+                {% endif %} {% endcomment %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<footer style="background-color: #d9d9d9; color: #000;">
+    &copy; 2025 Feed And Connect. All rights reserved.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</div>
+</body>
+</html>

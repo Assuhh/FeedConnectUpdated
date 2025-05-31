@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Reply to Message{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: auto; padding: 2rem;">
+    <h2 class="text-center mb-4">Reply to {{ original_message.sender.username }}</h2>
+
+    <div style="margin-bottom: 1rem; background-color: #f8f9fa; padding: 1rem; border-radius: 8px;">
+        <p><strong>Message:</strong> {{ original_message.content }}</p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom: 1rem;">
+            <label for="reply" style="font-weight: bold;">Your Reply</label>
+            <textarea name="content" id="reply" rows="4" required
+                      style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
+        </div>
+        <button type="submit" style="width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 8px;">
+            Send Reply
+        </button>
+    </form>
+</div>
+{% endblock %}

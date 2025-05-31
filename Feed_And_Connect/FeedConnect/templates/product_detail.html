@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="product-detail">
+        <h1 style="color: #fff; font-weight: bold;">{{ product.name }}</h1>
+        <p style="color: #fff; font-weight: bold;"><strong>Seller:</strong> {{ product.seller.username }}</p>
+        <p style="color: #fff; font-weight: bold;">{{ product.description }}</p>
+        <p style="color: #fff; font-weight: bold;"><strong>Price:</strong> ₱{{ product.price }}</p>
+        <p style="color: #fff; font-weight: bold;"><strong>Stock:</strong> {{ product.stock }}</p>
+
+        {% comment %} {% if has_colors %}
+            <div>
+                <strong style="color: #fff;">Available Colors:</strong>
+                <ul style="color: #fff;">
+                    {% for color in color_options %}
+                        <li>{{ color }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %} {% endcomment %}
+
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 300px;">
+        {% endif %}
+
+        <!-- Group both buttons inside a proper div for layout -->
+        <div class="d-flex gap-2 mt-3">
+            <a href="{% url 'send_message' receiver_id=product.seller.id item_type='product' item_id=product.id %}" class="btn btn-secondary">
+                Message Seller
+            </a>
+            <a href="{% url 'marketplace' %}" class="btn btn-secondary">
+                ← Return to Marketplace
+            </a>
+        </div>
+    </div>
+{% endblock %}

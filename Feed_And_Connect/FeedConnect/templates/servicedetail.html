@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="service-detail-container">
+        <h1>{{ service.title }}</h1>
+
+        <h1>{{ service.name }}</h1>
+        <div class="service-image">
+            {% if service.image %}
+                <img src="{{ service.image.url }}" alt="{{ service.title }}" style="max-width: 400px;">
+            {% else %}
+                <p>No image available</p>
+            {% endif %}
+        </div>
+
+        <div class="service-description">
+            <h3>Description</h3>
+            <p>{{ service.description }}</p>
+        </div>
+
+        <div class="service-price">
+            <h3>Price: ₱{{ service.price }}</h3>
+        </div>
+
+        <div class="service-contact">
+            {% comment %} <h3>Contact</h3> {% endcomment %}
+            <p>For more details or inquiries, you can message the seller.</p>
+        </div>
+
+        <!-- Button to message the service provider -->
+        <div class="d-flex gap-2 mt-3">
+            <a href="{% url 'send_message' receiver_id=service.seller.id item_type='service' item_id=service.id %}" class="btn btn-secondary">
+                Message Seller
+            </a>
+            <a href="{% url 'marketplace' %}" class="btn btn-secondary">
+                ← Return to Marketplace
+            </a>
+        </div>
+
+    </div>
+{% endblock %}

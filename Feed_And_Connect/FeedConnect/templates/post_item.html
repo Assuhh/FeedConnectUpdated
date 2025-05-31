@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Post Item - Pet Feeder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4" style="color: #fff; font-weight: bold;">Post an Item</h2>
+
+  <label for="item_type" class="form-label" style="color: #fff; font-weight: bold;">Select Item Type:</label>
+<select id="item_type" class="form-select mb-3" onchange="showForm()" 
+        style="background-color: #f0f0f0; border: 1px solid gray; color: #000;">
+  <option value="">-- Select --</option>
+  <option value="product" {% if selected_item_type == 'product' %}selected{% endif %}>Product</option>
+  <option value="service" {% if selected_item_type == 'service' %}selected{% endif %}>Service</option>
+</select>
+
+  
+  <!-- Product Form -->
+  <form id="product_form" method="POST" enctype="multipart/form-data" style="display:none; color: #fff; font-weight: bold;">
+    {% csrf_token %}
+    <input type="hidden" name="item_type" value="product">
+    {{ product_form.as_p }}
+    <button type="submit" class="btn btn-primary mt-3" style="background-color:  gray;">Post Product</button>
+  </form>
+
+  <!-- Service Form -->
+  <form id="service_form" method="POST" enctype="multipart/form-data" style="display:none; color: #fff; font-weight: bold;">
+    {% csrf_token %}
+    <input type="hidden" name="item_type" value="service">
+    {{ service_form.as_p }}
+    <button type="submit" class="btn btn-primary mt-3" style="background-color:  gray;">Post Service</button>
+  </form>
+</div>
+
+<script>
+function showForm() {
+  const selected = document.getElementById('item_type').value;
+  document.getElementById('product_form').style.display = (selected === 'product') ? 'block' : 'none';
+  document.getElementById('service_form').style.display = (selected === 'service') ? 'block' : 'none';
+}
+
+// Show correct form on page load
+window.onload = function() {
+  const selected = "{{ selected_item_type }}";
+  if (selected) {
+    document.getElementById('item_type').value = selected;
+    showForm();
+  }
+};
+</script>
+{% endblock %}

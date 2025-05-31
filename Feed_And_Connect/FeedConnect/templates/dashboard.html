@@ -2,35 +2,167 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Smart Pet Feeder Dashboard</title>
+    <title>Feed & Connect - Control</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #4a6fa1, #0c2e6d);
+            color: #ffffff;
+        }
+        .slider {
+            width: 100%;
+        }
+        .feed-button {
+            width: 100%;
+            background-color: #ADD8E6;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #0E3386;
+            border-radius: 10px;
+        }
+        .feed-button:hover {
+            background-color: #87CEFA;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-round {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider-round:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider-round {
+            background-color: #0E3386;
+        }
+        input:checked + .slider-round:before {
+            transform: translateX(26px);
+        }
+    </style>
 </head>
-<body class="bg-dark text-light">
+<body>
+
 <div class="container py-5">
-    <h2 class="mb-4">Smart Pet Feeder Control Panel</h2>
-    <form method="post">
+    <h2 class="mb-4 text-center">Feed & Connect Control</h2>
+
+     <!-- Display messages here -->
+     {% if messages %}
+     {% for message in messages %}
+         <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+             {{ message }}
+             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+         </div>
+     {% endfor %}
+     {% endif %}
+ 
+
+     <div class="text-center mb-3">
+        <p>Next Feeding:</p>
+        <h4 id="nextFeeding">{{ next_feeding_time }}</h4>
+    </div>
+
+
+    <div class="text-center mb-4">
+        <p>Schedule Count:</p>
+        <h5 id="scheduleCount">{{ feeding_times|length }}</h5>
+    </div>
+
+
+    <form method="POST">
         {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label">Portion Size</label>
-            <input type="range" class="form-range" min="1" max="10" name="portion">
+
+        <!-- Portion size slider -->
+        <div class="mb-4">
+            <label for="portion" class="form-label">Portion Size:</label>
+            <div class="mb-2" id="portionValueLabel">Selected: 50g</div>
+            <input type="range" id="portion" name="portion" min="1" max="255" value="10" class="form-range slider" oninput="updatePortionLabel()">
         </div>
-        <div class="mb-3">
-            <button type="submit" name="feed_now" class="btn btn-success">Feed Now</button>
+
+        <!-- Feed button -->
+        <div class="mb-4">
+            <button type="submit" name="feed_now" class="feed-button">FEED</button>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Schedule Feed Time</label>
-            <input type="time" name="schedule_time" class="form-control">
+
+        <!-- Feeding Times -->
+        <div class="row mb-4 text-center">
+            <div class="col-6 mb-3">
+                <label for="schedule_time1" class="form-label">Feeding Time 1</label>
+                <input type="time" id="schedule_time1" name="schedule_time1" class="form-control" value="{{ feeding_times.0 }}">
+            </div>
+            <div class="col-6 mb-3">
+                <label for="schedule_time2" class="form-label">Feeding Time 2</label>
+                <input type="time" id="schedule_time2" name="schedule_time2" class="form-control" value="{{ feeding_times.1 }}">
+            </div>
+            <div class="col-6 mb-3">
+                <label for="schedule_time3" class="form-label">Feeding Time 3</label>
+                <input type="time" id="schedule_time3" name="schedule_time3" class="form-control" value="{{ feeding_times.2 }}">
+            </div>
+            <div class="col-6 mb-3">
+                <label for="schedule_time4" class="form-label">Feeding Time 4</label>
+                <input type="time" id="schedule_time4" name="schedule_time4" class="form-control" value="{{ feeding_times.3 }}">
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Next Feed Time</label>
-            <input type="time" name="next_schedule" class="form-control">
+
+
+        <!-- On/Off Toggle -->
+        <div class="text-center mb-5">
+            <label for="schedule_toggle" class="form-label">Schedule On/Off</label><br>
+            <label class="toggle-switch">
+                <input type="checkbox" id="schedule_toggle" name="schedule_toggle" {% if schedule_toggle %} checked {% endif %}>
+                <span class="slider-round"></span>
+            </label>
         </div>
-        <div class="mb-3 form-check form-switch">
-            <input class="form-check-input" type="checkbox" name="schedule_toggle">
-            <label class="form-check-label">Enable Schedule</label>
-        </div>
-        <button type="submit" class="btn btn-primary">Update Settings</button>
+
+        <!-- Submit Button -->
+        {% comment %} <div class="text-center">
+            <button type="submit" class="btn btn-outline-light">Save Schedule</button>
+        </div> {% endcomment %}
+
     </form>
+
+    <di class="text-center">
+        <button type="submit" style="background-color: #4a6fa1; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Save Schedule</button>
+        <a href="{% url 'feed_history' %}" style="background-color: #4a6fa1; color: white; padding: 10px 20px; border: none; border-radius: 5px; text-decoration: none;">View Feed History</a>
+        <a href="{% url 'signin' %}" style="background-color: #4a6fa1; color: white; padding: 10px 20px; border: none; border-radius: 5px; text-decoration: none;">Feed&Connect</a>
+    </div>
+
 </div>
+<script>
+    // Function to update the portion size label dynamically
+    function updatePortionLabel() {
+        var portion = document.getElementById('portion').value;
+        var portionValueLabel = document.getElementById('portionValueLabel');
+
+        // Update the label to show the selected value
+        portionValueLabel.textContent = 'Selected: ' + portion + 'g';
+    }
+
+    // Initialize the label when the page loads
+    window.onload = updatePortionLabel;
+</script>
+
 </body>
 </html>

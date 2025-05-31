@@ -6,14 +6,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
+
     <title>Feed & Connect</title>
     <link rel="stylesheet" href="{% static 'assets/css/landing.css' %}">
     <script src="{% static 'assets/js/landing.js' %}" defer></script>
-=======
+
     <title>Feed n Connect</title>
     <link rel="stylesheet" href="landing.css">
->>>>>>> 5cf066af3c29e82357eaf767a6c911d66feba9af
+
 </head>
 
 <body>
@@ -22,19 +22,23 @@
             <img src="{% static 'images/resources/pet-feeder.png' %}" alt="Logo" class="logo">
             <nav class="nav-links">
                 <a href="index" onclick="showSection('news-feed')">SOCIAL MEDIA</a>
-                <a href="#" onclick="showSection('e_commerce')">E-COMMERCE</a>
-                <a href="#" onclick="showSection('control')">CONTROL</a>
+                <a href="marketplace" onclick="showSection('e_commerce')">E-COMMERCE</a>
+                <a href="dashboard1"= onclick="showSection('control')">CONTROL</a>
                 <a href="#" onclick="showSection('setting')">SETTING</a>
-                <a href="#" onclick="showSection('feed-history')">FEED HISTORY</a>
+                <a href="history1" onclick="showSection('feed-history')">FEED HISTORY</a>
                 <a href="#" onclick="showSection('bmi')">BMI</a>
             </nav>
         </div>
 
         <div class="main-content">
+            <div id="default-image">
+                <img src="{% static 'images/resources/connectpets.png' %}" alt="Pets" class="side-image">
+            </div>            
+
             {% comment %} <div id="news-feed" class="content-section active">Welcome to the News Feed!</div> {% endcomment %}
             <div id="control" class="content-section">
                 <!-- Smart Pet Feeder Control Panel (Pure CSS version) -->
-<div class="pet-feeder-container">
+{% comment %} <div class="pet-feeder-container">
     <h2>Smart Pet Feeder Control Panel</h2>
     <form method="post">
         {% csrf_token %}
@@ -59,13 +63,13 @@
         </div>
         <button type="submit" class="btn-primary">Update Settings</button>
     </form>
-</div>
+</div> {% endcomment %}
 
             </div>
-            <div id="e_commerce" class="content-section">Sell your items here.</div>
-            <div id="setting" class="content-section">Change your settings here.</div>
-            <div id="feed-history" class="content-section">
-                <div style="background-color: #0A0A60; color: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); width: fit-content; max-width: 900px; margin: auto; font-family: sans-serif;">
+            <div id="e_commerce" class="content-section">E-Commerce</div>
+            <div id="setting" class="content-section">Settings</div>
+            <div id="feed-history" class="content-section"></div>
+                {% comment %} <div style="background-color: #0A0A60; color: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); width: fit-content; max-width: 900px; margin: auto; font-family: sans-serif;">
 
                     <h2 style="margin-top: 0; margin-bottom: 30px;">Feeding History</h2>
                 
@@ -95,26 +99,44 @@
                     </div>
                 
                 </div>
-            </div>    
+            </div>     {% endcomment %}
             <div id="bmi" class="content-section">
-<title>Pet BMI Calculator</title>
- 
-<h2>Pet BMI Calculator</h2>
+                    <div class="bmi-calculator">
+                        <h1>Pet BMI Calculator</h1>
+                        <form id="bmiForm">
+                            <div class="form-group">
+                                <label for="pet">Select Pet Type:</label>
+                                <select id="pet" name="pet" onchange="onPetChange()">
+                                    <option value="dog">Dog</option>
+                                    <option value="cat">Cat</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="breed">Select Breed:</label>
+                                <select id="breed" name="breed">
+                                    <!-- Breeds will be added dynamically -->
+                                </select>
+                            </div>
+                            <div id="height-container" class="form-group">
+                                <label for="height">Enter Height (m) (EX. 0.56 ):</label>
+                                <input type="number" step="0.01" id="height" name="height" placeholder="Enter pet height in meters">
+                            </div>
+                            <div id="length-container" class="form-group">
+                                <label for="length">Enter Body Length (m):</label>
+                                <input type="number" step="0.01" id="length" name="length" placeholder="Enter body length in meters">
+                            </div>
+                            <div class="form-group">
+                                <label for="weight">Enter Weight (kg):</label>
+                                <input type="number" step="0.1" id="weight" name="weight" placeholder="Enter pet weight in kg">
+                            </div>
+                            <button type="button" onclick="calculateBMI()" style="background-color: #0e3386; color: white;">Calculate BMI</button>
 
-<div class="bmi-placeholder">
-    <p>This feature is currently under development.</p>
-    <p>The BMI calculator will help you monitor your pet's health by calculating their Body Mass Index based on weight and size measurements.</p>
-</div>
-
-<style>
-    .bmi-placeholder {
-        background-color: #191970;
-        padding: 20px;
-        border-radius: 8px;
-        text-align: center;
-        margin-top: 20px;
-    }
-</style>
+                        </form>
+                
+                        <div id="result"></div>
+                        <div id="food-recommendation"></div>
+                    </div>
+                
             </div>
         </div>
     </div>

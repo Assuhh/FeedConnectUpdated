@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .conversation-container {
+        display: flex;
+        gap: 2rem;
+        padding: 2rem;
+        flex-wrap: wrap; /* To handle smaller screens */
+    }
+
+    .sidebar {
+        width: 300px;
+        border-right: 1px solid #ccc;
+        padding-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .messages {
+        flex: 1;
+        padding-left: 1rem;
+        min-width: 300px; /* Ensures the messages container is responsive */
+    }
+
+    .message {
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        border-radius: 5px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        color: #000;
+    }
+
+    .sent {
+        background-color: rgba(185, 217, 235, 0.5); /* semi-transparent */
+        text-align: right;
+    }
+
+    .received {
+        background-color: rgba(185, 217, 235, 0.5); /* semi-transparent */
+        text-align: left;
+    }
+
+
+    .product-box {
+        border: 1px solid #ccc;
+        padding: 0.5rem;
+        border-radius: 5px;
+        margin-top: 1rem;
+        background-color: rgba(185, 217, 235, 0.5); /* semi-transparent */
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+
+    .product-box img {
+        height: 80px;
+        margin-top: 5px;
+        object-fit: cover;
+    }
+
+    .message-form {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message-form textarea {
+        padding: 0.8rem;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        resize: none;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        min-height: 80px;
+    }
+
+    .message-form button {
+        padding: 0.5rem 1rem;
+        border: none;
+        background-color: #b8bdb5;
+        color: white;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .message-form button:hover {
+        background-color: #6c757d;
+    }
+
+    @media (max-width: 768px) {
+        .conversation-container {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            border-bottom: 1px solid #ccc;
+            padding-right: 0;
+        }
+
+        .messages {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="conversation-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h4 style="color: #fff; font-weight: bold;">Participants</h4>
+        <ul style="color: lightgray; font-weight: bold;">
+            {% for participant in conversation.participants.all %}
+                <li>{{ participant.username }}</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Inquired Products or Services -->
+        <div>
+            <h5 style="margin-top: 1rem; color: #fff; font-weight: bold;">Inquired Product(s) or Service(s)</h5>
+            {% for product in conversation.products.all %}
+                <div class="product-box">
+                    <strong style="color: #000;">Product:</strong>  <!-- Navy blue -->
+                    <a href="{% url 'product_detail' product.id %}" style="color: white;">
+                        {{ product.name }}
+                    </a><br>
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            {% for service in conversation.services.all %}
+                <div class="product-box">
+                    <strong>Service:</strong>
+                    <a href="{% url 'service_detail' service.id %}">
+                        {{ service.title }}
+                    </a><br>
+                    {% if service.image %}
+                        <img src="{{ service.image.url }}" alt="{{ service.title }}">
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages">
+        <h3 style="color: #fff; font-weight: bold;">Conversation</h3>
+        {% for message in messages %}
+            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                <strong>{{ message.sender.username }}</strong><br>
+                {{ message.content }}<br>
+                <small>{{ message.timestamp|date:"M d, Y H:i" }}</small>
+            </div>
+        {% empty %}
+            <p>No messages yet.</p>
+        {% endfor %}
+
+        <!-- Send Message Form -->
+        <div class="message-form">
+            <form method="post">
+                {% csrf_token %}
+                <textarea name="content" rows="3" placeholder="Write a message..." required></textarea><br>
+                <button type="submit" style="color: #000;">Send</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

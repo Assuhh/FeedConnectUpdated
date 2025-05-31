@@ -1,39 +1,150 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 import uuid
 from datetime import datetime
 from django.utils.timezone import now
 
-
 User = get_user_model()
 
-# Create your models here.
-
 class FeedingSchedule(models.Model):
-    pet_name = models.CharField(max_length=100)
-    feeding_time = models.TimeField()
-    portion_size = models.FloatField()  
+    
+    feeding_time1 = models.CharField(max_length=5, blank=True, null=True)
+    feeding_time2 = models.CharField(max_length=5, blank=True, null=True)
+    feeding_time3 = models.CharField(max_length=5, blank=True, null=True)
+    feeding_time4 = models.CharField(max_length=5, blank=True, null=True)
+    is_active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return f"Schedule {self.id} - {'Active' if self.is_active else 'Inactive'}"
 
 class FeedingLog(models.Model):
     pet_name = models.CharField(max_length=100, default='')
     timestamp = models.DateTimeField(default=now)
-    portion_dispensed = models.FloatField(default=0.0)  
+    portion_dispensed = models.FloatField(default=0.0)
     success = models.BooleanField(default=True)
-   
-    
+
 class FeedHistory(models.Model):
+    
     FEED_TYPE_CHOICES = (
-        ('manual' , 'Manual'),
+        ('manual', 'Manual'),
         ('scheduled', 'Scheduled'),
     )
-    
     timestamp = models.DateTimeField(auto_now_add=True)
-    amount = models.IntegerField(help_text= " Amount of Food Dispensed")
-    feed_type = models.CharField(max_length=10, choices= FEED_TYPE_CHOICES)
+    amount = models.IntegerField()  # Amount of food dispensed
+    feed_type = models.CharField(max_length=10, choices=FEED_TYPE_CHOICES)
+
+    def __str__(self):
+        return f"{self.timestamp} - {self.feed_type} - {self.amount}g"
     
-    def _str_(self):
-           return f"{self.timestamp} - {self.feed_type} - {self.amount}"
-        
+    class Meta:
+        ordering = ['-timestamp']
+
+
+class Product(models.Model):
+    STATUS_CHOICES = [
+        ('selling', 'Selling'),
+        ('sold', 'Sold'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ('toys', 'Toys'),
+        ('food', 'Food'),
+        ('accessories', 'Accessories'),
+        ('other', 'Other'),
+    ]
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='selling')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField()
+    # color_options = models.JSONField(default=list, blank=True)
+    image = models.ImageField(upload_to='products/', null=True, blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # @property
+    # def has_colors(self):
+    #     return bool(self.color_options)
+
+class SellerReview(models.Model):
+    reviewer = models.ForeignKey(User, related_name='given_reviews', on_delete=models.CASCADE)
+    seller = models.ForeignKey(User, related_name='received_reviews', on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('reviewer', 'seller')
+
+    def str(self):
+        return f"{self.reviewer} rated {self.seller} - {self.rating}/5"
+
+class Service(models.Model):
+    CATEGORY_CHOICES = [
+        ('grooming', 'Grooming'),
+        ('training', 'Training'),
+        ('walking', 'Walking'),
+        ('other', 'Other'),
+    ]
+
+    name = models.CharField(max_length=100)
+    seller = models.ForeignKey(User, on_delete=models.CASCADE)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to='services/', null=True, blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')  # ← Add this
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Message(models.Model):
+    sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    conversation = models.ForeignKey('Conversation', related_name='messages', on_delete=models.CASCADE, default=1)
+    
+    # Optional references
+    product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.SET_NULL)
+    service = models.ForeignKey(Service, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"{self.sender} to {self.receiver} at {self.timestamp}"
+
+class Conversation(models.Model):
+    participants = models.ManyToManyField(User)
+    products = models.ManyToManyField(Product, blank=True)
+    services = models.ManyToManyField(Service, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Conversation {self.id}"
+
+    def get_involved_items(self):
+        # Combine all the products and services in the conversation
+        return self.products.all() | self.services.all()
+
+    @property
+    def involved_item(self):
+        # You can modify this method to return the first product/service as a general reference
+        if self.products.exists():
+            return self.products.first()
+        if self.services.exists():
+            return self.services.first()
+        return None
+
+    def get_other_users(self, user):
+        # Return all participants except the one passed in (the current user)
+        return self.participants.exclude(id=user.id)
+
 class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     id_user = models.IntegerField()

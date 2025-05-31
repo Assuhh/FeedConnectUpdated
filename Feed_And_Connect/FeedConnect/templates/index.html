@@ -19,12 +19,74 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
-<body style="background: linear-gradient(to top right, #cce5f6, #003366); min-height: 100vh; margin: 0;">
+            <style>
+    body {
+    position: relative;
+    color: #ffffff;
+    min-height: 100vh;
+    margin: 0;
+    z-index: 1;
+    }
+
+    body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("{% static 'images/resources/posak.png' %}");
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    opacity: 0.7; /* Adjust this value as needed */
+    z-index: -1;
+    pointer-events: none; /* Allow clicks through the background */
+    }
+
+    #scrollUpBtn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        display: none;
+        background-color: #000;
+        color: white;
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        z-index: 1000;
+        transition: background-color 0.3s ease;
+        font-size: 20px;
+        text-align: center;
+    }
+
+    #scrollUpBtn:hover {
+        background-color:  #343a40;
+    }
+
+     #scrollTopBtn i {
+        line-height: 50px; /* center icon vertically */
+        color: white;
+    }
+
+</style>
 
 
-            <header>
-                <a href="javascript:history.back()" 
-   style="background-color: #012169; color: white; font-weight: bold; text-decoration: none; padding: 10px 16px; border-radius: 6px; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: inline-block; float: left; margin: 10px;">
+            <header style="
+                background-color: #ffffff10;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                z-index: 10;
+                position: relative;
+                width: 100%;
+                ">
+
+                <a href="/dashboard1" 
+   style="background-color: gray; color: white; font-weight: bold; text-decoration: none; padding: 10px 16px; border-radius: 6px; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: inline-block; float: left; margin: 10px;">
    &#8592;
 </a>
                 <div class="header_inner">
@@ -61,7 +123,7 @@
                          <!-- upload -->
                          <a href="#" class="upload-button">
                             <ion-icon name="add-circle" class="upload-icon"></ion-icon>
-                            Upload Pics / Videos
+                            Upload
                           </a>
                           
                          <!-- upload dropdown box -->
@@ -86,7 +148,7 @@
                         
                                     <form action="upload" method="POST" enctype="multipart/form-data">
                                         {% csrf_token %}
-                                        <p class="upload-text">Upload pics</p>
+                                        <p class="upload-text" style="color: white">Upload pics</p>
                                         <input type="file" name="image_upload" class="upload-input">
                                         <textarea class="caption-area" name="caption" placeholder="caption..."></textarea>
                                         <br>
@@ -124,7 +186,7 @@
                             </div>
                         
                             <div class="dropdown-footer">
-                                Your Image size Must be Maxmium 999MB
+                                Your Image size Must be Maximum 100MB
                             </div>
                         </div>
                         
@@ -158,7 +220,7 @@
 
                         <!-- Messages -->
 
-                        {% comment %} <a href="#" class="header-links-item">
+                         {% comment %} <a href="#" class="header-links-item">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="0.5em" height="0.5em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 16 16"><g fill="currentColor"><path d="M2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/></g></svg>
                         </a>
                         <div uk-drop="mode: click;offset: 4" class="header_dropdown">
@@ -168,11 +230,11 @@
                             <ul class="dropdown_scrollbar" data-simplebar>
                                 <li>
                                     <a href="#">
-                                        <div class="drop_avatar"> <img src="{% static 'assets/images/avatars/avatar-1.jpg' %}" alt="">
+                                        <div class="drop_avatar"> <img src="{% static 'images/resources/golden-retriever.png' %}" alt="">
                                         </div>
                                         <div class="drop_content">
-                                            <strong> Taiye </strong> <time> 6:43 PM</time>
-                                            <p> hi tomi </p>
+                                            <strong> Chris </strong> <time> 6:43 PM</time>
+                                            <p> hi owner </p>
                                         </div>
                                     </a>
                                 </li>
@@ -190,6 +252,7 @@
                         </a>
                         <div uk-drop="mode: click;offset:9" class="profile-dropdown">
                             <ul class="profile-dropdown-list">
+                              <li><a href="{% url 'profile' user.username %}" class="profile-link">Profile</a></li>
                               <li><a href="/settings" class="profile-link">Account setting</a></li>
                               <li><a href="/logout" class="profile-link">Log Out</a></li>
                             </ul>
@@ -210,7 +273,7 @@
 
                         <!-- post 1-->
 
-                        {% for post in posts reversed %}
+                        {% for post in posts %}
                         <div class="bg-white shadow rounded-md  -mx-2 lg:mx-0">
     
                             <!-- post header-->
@@ -221,14 +284,15 @@
                                             <img src="{% static 'assets/images/avatars/avatar-2.jpg' %}" class="bg-gray-200 border border-white rounded-full w-8 h-8">
                                         </div>
                                     </a> {% endcomment %}
-                                    <span class="block font-semibold "><a href="/profile/{{post.user}}">@{{post.user}}</a></span>
+                                    <span class="block font-semibold"><a href="/profile/{{post.user}}" style="color: black;">@{{post.user}}</a></span>
+
                                 </div>
                               <div>
                                 <a href="#"> <i class="icon-feather-more-horizontal text-2xl hover:bg-gray-200 rounded-full p-2 transition -mr-1 "></i> </a>
                                 <div class="bg-white w-56 shadow-md mx-auto p-2 mt-12 rounded-md text-gray-500 hidden text-base border border-gray-100  " uk-drop="mode: hover;pos: top-right">
                               
                                     <ul class="space-y-1">
-                                      <li> 
+                                      {% comment %} <li> 
                                           <a href="#" class="flex items-center px-3 py-2 hover:bg-gray-200 hover:text-gray-800 rounded-md ">
                                            <i class="uil-share-alt mr-1"></i> Share
                                           </a> 
@@ -242,18 +306,18 @@
                                           <a href="#" class="flex items-center px-3 py-2 hover:bg-gray-200 hover:text-gray-800 rounded-md ">
                                            <i class="uil-comment-slash mr-1"></i>   Disable comments
                                           </a> 
-                                      </li> 
-                                      <li> 
+                                      </li>  {% endcomment %}
+                                      {% comment %} <li> 
                                           <a href="#" class="flex items-center px-3 py-2 hover:bg-gray-200 hover:text-gray-800 rounded-md ">
                                            <i class="uil-favorite mr-1"></i>  Add favorites 
                                           </a> 
-                                      </li>
+                                      </li> {% endcomment %}
                                       <li>
                                         <hr class="-mx-2 my-2 ">
                                       </li>
                                       <li> 
                                           <a href="#" class="flex items-center px-3 py-2 text-red-500 hover:bg-red-100 hover:text-red-500 rounded-md ">
-                                           <i class="uil-trash-alt mr-1"></i>  Delete
+                                           <i class="uil-trash-alt mr-1"></i>  Delete Post
                                           </a> 
                                       </li>
                                     </ul>
@@ -262,13 +326,18 @@
                               </div>
                             </div>
     
-                            <div uk-lightbox>
-                                <a href="{{post.image.url}}">  
-                                    <img src="{{post.image.url}}" alt="">
-                                </a>
-                            </div>
+                            {% if post.image %}
+                                <div uk-lightbox>
+                                    <a href="{{ post.image.url }}">  
+                                        <img src="{{ post.image.url }}" alt="Post Image" style="width: 550px; height: 450px; object-fit: cover;">
+                                    </a>
+                                </div>
+                            {% else %}
+                                <img src="{% static 'assets/images/default-post.jpg' %}" alt="Default post image">
+                            {% endif %}
+
                             {% comment %} <button class="custom-btn">Feed</button>
-                            <style>
+                            <>
                                 .custom-btn {
                                     background-color: #72A0C1; /* Blue background */
                                     color: white;
@@ -285,7 +354,7 @@
                                 .custom-btn:hover {
                                     background-color: #0056b3; /* Darker blue */
                                 }
-                                </style>
+                                </>
 
                                 <button class="custom-btn">Connect</button>
                                 <style>
@@ -305,7 +374,7 @@
                                     .custom-btn:hover {
                                         background-color: #0056b3; /* Darker blue */
                                     }
-                                    </style>
+                                    </>
 
                                     <button class="custom-btn">History</button>
                                     <style>
@@ -374,10 +443,12 @@
                                         </div> {% endcomment %}
                                         
                                     </a>
-                                    <a href="{{post.image.url}}" class="flex items-center space-x-2 flex-1 justify-end" download>
-                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="25" height="25" preserveAspectRatio="xMidYMid meet" viewBox="0 0 16 16"><g fill="currentColor"><path d="M8.5 1.5A1.5 1.5 0 0 1 10 0h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h6c-.314.418-.5.937-.5 1.5v6h-2a.5.5 0 0 0-.354.854l2.5 2.5a.5.5 0 0 0 .708 0l2.5-2.5A.5.5 0 0 0 10.5 7.5h-2v-6z"/></g></svg>
-                                        
+                                    {% if post.image %}
+                                    <a href="{{ post.image.url }}" class="flex items-center space-x-2 flex-1 justify-end" download>
+                                        <!-- SVG icon here -->
                                     </a>
+                                    {% endif %}
+
                                 </div>
                                 {% comment %} <div class="flex items-center space-x-3"> 
                                     <div class="flex items-center">
@@ -390,9 +461,11 @@
                                     </div>
                                 </div> {% endcomment %}
 
-                                <p> 
-                                    <a href="/profile/{{post.user}}"><strong>{{post.user}}</strong></a> {{post.caption}}
+                                <p>
+                                    <a href="/profile/{{post.user}}" style="color: black;"><strong>{{post.user}}</strong></a>
+                                    <span style="color: gray;">{{post.caption}}</span>
                                 </p>
+
 
                                 {% comment %} <div class="border-t pt-4 space-y-4 ">
                                     <div class="flex">
@@ -850,30 +923,32 @@
                     <!-- right sidebar-->
                     <div class="lg:w-5/12">
 
-                        <div style="background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden;">
-                            <div style="background-color: #aecddd; border-bottom: 1px solid #B9D9EB; display: flex; align-items: baseline; justify-content: space-between; padding: 16px 24px;">
-                                <h2 class="font-semibold text-lg">Users You Can Follow</h2>
-                                {% comment %} <a href="#"> Refresh</a> {% endcomment %}
+                    <div style="position: sticky; top: 80px; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden;">
+                        <!-- Your existing friend suggestion content here -->
+                        <div style="background-color: gray; border-bottom: 1px solid #B9D9EB; display: flex; align-items: baseline; justify-content: space-between; padding: 16px 24px;">
+                        <h2 class="font-semibold text-lg text-white">Users You Can Follow</h2>
+                        </div>
+
+                        <div class="divide-gray-300 divide-gray-50 divide-opacity-50 divide-y px-4 ">
+                        {% for suggestion in suggestions_username_profile_list %}
+                        <div class="flex items-center justify-between py-3">
+                            <div class="flex flex-1 items-center space-x-4">
+                            <a href="/profile/{{suggestion.user}}">
+                                <img src="{{suggestion.profileimg.url}}" class="bg-gray-200 rounded-full w-10 h-10" />
+                            </a>
+                            <div class="flex flex-col">
+                                <span class="block capitalize font-semibold text-black">{{suggestion.user}}</span>
+                                <span class="block capitalize text-sm text-black">{{suggestion.bio}}</span>
                             </div>
-                           
-                            <div class="divide-gray-300 divide-gray-50 divide-opacity-50 divide-y px-4 ">
+                            </div>
+                            <a href="/profile/{{suggestion.user}}" class="view-user-btn">View User</a>
+                        </div>
+                        {% endfor %}
+                        </div>
+                    </div>
 
-                                {% for suggestion in suggestions_username_profile_list %}
-                                <div class="flex items-center justify-between py-3">
-                                    <div class="flex flex-1 items-center space-x-4">
-                                        <a href="/profile/{{suggestion.user}}">
-                                            <img src="{{suggestion.profileimg.url}}" class="bg-gray-200 rounded-full w-10 h-10">
-                                        </a>
-                                        <div class="flex flex-col">
-                                            <span class="block capitalize font-semibold"> {{suggestion.user}} </span>
-                                            <span class="block capitalize text-sm"> {{suggestion.bio}} </span>
-                                        </div>
-                                    </div>
-                                    
-                                    <a href="/profile/{{suggestion.user}}" class="view-user-btn"> View User </a>
+                    </div>
 
-                                </div>
-                                {% endfor %}
                                 {% comment %} <div class="flex items-center justify-between py-3">
                                     <div class="flex flex-1 items-center space-x-4">
                                         <a href="profile.html">
@@ -931,7 +1006,22 @@
 
 
 
+        <button onclick="scrollToTop()" id="scrollUpBtn" title="Go to top">⇈</button>
 
+        <script>
+  window.onscroll = function () {
+    const btn = document.getElementById("scrollUpBtn");
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+      btn.style.display = "block";
+    } else {
+      btn.style.display = "none";
+    }
+  };
+
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
 
 
 
