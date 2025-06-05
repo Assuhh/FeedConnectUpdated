@@ -925,6 +925,10 @@ header.sticky {
     visibility: visible;
 }
 
+.modal-gray-bg {
+  background-color: #f5f5f5;
+}
+
 
 /*--- dropdowns ---*/
 

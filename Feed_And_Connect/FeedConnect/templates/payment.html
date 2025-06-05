@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Payment Instructions</h2>
+
+<p>You are purchasing: <strong>{{ product.name }}</strong></p>
+
+{% if seller_profile %}
+  <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+    <h3>Pay to Seller via GCash</h3>
+
+    {% if seller_profile.gcash_qr %}
+      <img src="{{ seller_profile.gcash_qr.url }}" width="200" alt="GCash QR Code" style="display: block; margin-bottom: 10px;">
+    {% else %}
+      <p><em>No QR uploaded.</em></p>
+    {% endif %}
+
+    {% if seller_profile.gcash_number %}
+      <p><strong>GCash Number:</strong> {{ seller_profile.gcash_number }}</p>
+    {% endif %}
+
+    {% if seller_profile.gcash_fullname %}
+      <p><strong>GCash Fullname:</strong> {{ seller_profile.gcash_fullname }}</p>
+    {% else %}
+      <p><em>No full name saved.</em></p>
+    {% endif %}
+  </div>
+{% else %}
+  <p><em>No seller profile found.</em></p>
+{% endif %}
+
+<hr>
+
+<h3>Submit Payment Proof</h3>
+
+<form method="post" enctype="multipart/form-data" action="{% url 'payment' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" style="padding: 10px 20px; cursor: pointer;">Submit Payment</button>
+</form>
+
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% endblock %}

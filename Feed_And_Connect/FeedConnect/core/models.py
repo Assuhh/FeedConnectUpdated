@@ -16,6 +16,7 @@ class FeedingSchedule(models.Model):
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    portion = models.PositiveIntegerField(default=50)
 
 
     def __str__(self):
@@ -43,6 +44,54 @@ class FeedHistory(models.Model):
     class Meta:
         ordering = ['-timestamp']
 
+class SellerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    display_name = models.CharField(max_length=100, blank=True)
+    gcash_fullname = models.CharField(max_length=100, blank=True)
+    gcash_number = models.CharField(max_length=20, blank=True, null=True)
+    gcash_qr = models.ImageField(upload_to='gcash_qr_codes/', blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True)  # <-- New field
+
+    def __str__(self):
+        return self.display_name or self.user.username
+    
+    
+class PaymentProof(models.Model):
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payment_proofs')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_payments')
+    item_type = models.CharField(max_length=20)  # "product" or "service"
+    item_id = models.PositiveIntegerField()
+    reference_number = models.IntegerField(blank=True, null=True)
+    screenshot = models.ImageField(upload_to='payment_screenshots/', blank=True, null=True)
+    is_confirmed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment from {self.buyer.username} to {self.seller.username} for {self.item_type} #{self.item_id}"
+
+class SellerReview(models.Model):
+    reviewer = models.ForeignKey(User, related_name='given_reviews', on_delete=models.CASCADE)
+    seller = models.ForeignKey(User, related_name='received_reviews', on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('reviewer', 'seller')
+
+    def __str__(self):
+        return f"{self.reviewer} rated {self.seller} - {self.rating}/5"
+
+class Order(models.Model):
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_confirmed = models.BooleanField(default=False)
+    payment = models.OneToOneField('PaymentProof', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Order: {self.product.title} from {self.seller.username} to {self.buyer.username}"
 
 class Product(models.Model):
     STATUS_CHOICES = [
@@ -61,29 +110,40 @@ class Product(models.Model):
     seller = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     description = models.TextField()
+    location = models.CharField(max_length=255, blank=True, null=True)#new#
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
     # color_options = models.JSONField(default=list, blank=True)
     image = models.ImageField(upload_to='products/', null=True, blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     created_at = models.DateTimeField(auto_now_add=True)
+    rating = models.FloatField(default=0.0)
+
 
     # @property
     # def has_colors(self):
     #     return bool(self.color_options)
 
-class SellerReview(models.Model):
-    reviewer = models.ForeignKey(User, related_name='given_reviews', on_delete=models.CASCADE)
-    seller = models.ForeignKey(User, related_name='received_reviews', on_delete=models.CASCADE)
-    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
-    comment = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+class ProductRating(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    rating = models.IntegerField()
 
     class Meta:
-        unique_together = ('reviewer', 'seller')
+        unique_together = ('user', 'product')
+        
+# class SellerReview(models.Model):
+#     reviewer = models.ForeignKey(User, related_name='given_reviews', on_delete=models.CASCADE)
+#     seller = models.ForeignKey(User, related_name='received_reviews', on_delete=models.CASCADE)
+#     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+#     comment = models.TextField(blank=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    def str(self):
-        return f"{self.reviewer} rated {self.seller} - {self.rating}/5"
+#     class Meta:
+#         unique_together = ('reviewer', 'seller')
+
+#     def str(self):
+#         return f"{self.reviewer} rated {self.seller} - {self.rating}/5"
 
 class Service(models.Model):
     CATEGORY_CHOICES = [
@@ -111,6 +171,7 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     conversation = models.ForeignKey('Conversation', related_name='messages', on_delete=models.CASCADE, default=1)
+    is_read = models.BooleanField(default=False)
     
     # Optional references
     product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.SET_NULL)
@@ -151,10 +212,10 @@ class Profile(models.Model):
     bio = models.TextField(blank=True)
     profileimg = models.ImageField(upload_to='profile_images', default='blank-profile-picture-973460_1280.png')
     location = models.CharField(max_length=100, blank=True)
+    profile_complete = models.BooleanField(default=False)  # <-- Add this field
 
     def __str__(self):
         return self.user.username
-    
 class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.CharField(max_length=100)
@@ -165,6 +226,15 @@ class Post(models.Model):
 
     def __str__(self):
         return self.user
+    
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')  # Link to Post
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Who made the comment
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Comment by {self.user.username} on {self.post}'
     
 class LikePost(models.Model):
     post_id = models.CharField(max_length=500)

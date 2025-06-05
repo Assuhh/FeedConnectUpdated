@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>My Orders</h2>
+
+{% for entry in enriched_payments %}
+    {% with payment=entry.payment item=entry.item %}
+        <div style="border:1px solid #ccc; margin-bottom:10px; padding:10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>
+                        {% if item %}
+                            {{ item.name }}
+                        {% else %}
+                            Unknown Item
+                        {% endif %}
+                    </strong> ({{ payment.item_type|title }})
+                    <br>
+                    <small>Reference: {{ payment.reference_number }}</small>
+                </div>
+                <button onclick="toggleDetails('details-{{ forloop.counter }}')" class="btn btn-sm btn-outline-primary">
+                    View Details
+                </button>
+            </div>
+
+            <div id="details-{{ forloop.counter }}" style="display: none; margin-top: 10px;">
+                {% if item %}
+                    {% if payment.item_type == 'product' %}
+                        <p>Description: {{ item.description }}</p>
+                        <p>Price: ₱{{ item.price }}</p>
+                        <p>Quantity: {{ item.stock }}</p>
+                        {% if item.color %}
+                            <p>Color: {{ item.color }}</p>
+                        {% endif %}
+                    {% elif payment.item_type == 'service' %}
+                        <p>Description: {{ item.description }}</p>
+                        <p>Price: ₱{{ item.price }}</p>
+                        <p>Category: {{ item.category }}</p>
+                        <p>Duration: {{ item.duration }}</p>
+                    {% endif %}
+                {% else %}
+                    <p>Item details not available.</p>
+                {% endif %}
+                <p>Status: {{ payment.status }}</p>
+                <p>Date: {{ payment.timestamp|date:"F d, Y H:i" }}</p>
+            </div>
+        </div>
+    {% endwith %}
+{% empty %}
+    <p>You have no payments yet.</p>
+{% endfor %}
+
+<script>
+    function toggleDetails(id) {
+        const el = document.getElementById(id);
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+
+{% endblock %}

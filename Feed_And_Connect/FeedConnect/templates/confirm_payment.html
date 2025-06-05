@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Confirm Payment</h2>
+
+<p>Buyer: {{ payment.buyer.username }}</p>
+<p>Reference Number: {{ payment.reference_number }}</p>
+{% if payment.screenshot %}
+    <img src="{{ payment.screenshot.url }}" width="200">
+{% endif %}
+
+<form method="post" action="{% url 'confirm_payment' payment.id %}">
+  {% csrf_token %}
+  <button type="submit">Confirm Payment</button>
+</form>
+
+{% endblock %} 

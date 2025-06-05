@@ -51,13 +51,54 @@
             background-clip: padding-box;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             will-change: transform;
+
+            /* ✅ Add these to enforce default size */
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
         }
+
 
         .product-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
         
+         .star-rating {
+            display: flex;
+            gap: 2px;
+            margin: 0.5rem 0;
+            direction: rtl; /* important for star coloring */
+        }
+
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ccc; /* gray default */
+            font-size: 1.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Hover effect colors star hovered + stars before it */
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: gold;
+        }
+
+        /* Reset all stars after checked radio */
+        .star-rating input[type="radio"]:checked ~ label {
+            color: #ccc;
+        }
+
+        /* Color checked star + previous stars */
+        .star-rating input[type="radio"]:checked + label,
+        .star-rating input[type="radio"]:checked + label ~ label {
+            color: gold;
+        }
+
 
 
     </style>
@@ -72,7 +113,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: rgba(128, 128, 128, 0.6);">
 
     <div class="container">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">Feed-Commerce</a>
+        <a class="navbar-brand" href="{% url 'dashboard_1' %}">Feed-Commerce</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -82,12 +123,34 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'marketplace' %}" style="color: #fff;">Marketplace</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'post_item' %}" style="color: #fff;">Post Item</a></li>
                 {% if user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'my_listings' %}" style="color: #fff;">My Listings</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'my_listings' %}" style="color: #fff;">Listings</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'seller_profile' %}" style="color: #fff;">Seller Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'my_payments' %}" style="color: #fff;">Orders</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'payment_confirmations' %}" style="color: #fff;">Confirmations</a></li>
                  {% endif %}
                 {% comment %} <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_1' %}">Dashboard</a></li> {% endcomment %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'inbox' %}" style="color: #fff">Inbox</a></li>
+                <li class="nav-item">
+                <a class="nav-link" href="{% url 'inbox' %}" style="color: #fff; position: relative;">
+                    Inbox
+                    {% if unread_count > 0 %}
+                    <span style="
+                        position: absolute;
+                        top: 0;
+                        right: -10px;
+                        background: red;
+                        color: white;
+                        font-size: 12px;
+                        border-radius: 50%;
+                        padding: 2px 6px;
+                    ">
+                        {{ unread_count }}
+                    </span>
+                    {% endif %}
+                </a>
+                </li>
+
                 {% comment %} {% if user.is_authenticated %} {% endcomment %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_1' %}" style="color: #fff">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_1' %}" style="color: #fff">Control</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}" style="color: #fff">Logout</a></li>
                 {% comment %} {% else %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'signin' %}">Sign In</a></li>
@@ -105,6 +168,21 @@
 <footer style="background-color: #d9d9d9; color: #000;">
     &copy; 2025 Feed And Connect. All rights reserved.
 </footer>
+
+<script>
+    function openImageModal(src) {
+        const modal = document.getElementById("imageModal");
+        const modalImg = document.getElementById("modalImage");
+        modalImg.src = src;
+        modal.style.display = "flex";
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById("imageModal");
+        modal.style.display = "none";
+    }
+</script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% block extra_js %}{% endblock %}

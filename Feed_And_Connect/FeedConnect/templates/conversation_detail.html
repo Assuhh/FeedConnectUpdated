@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load tz %}
 
 {% block content %}
 <style>
@@ -149,11 +150,24 @@
     <div class="messages">
         <h3 style="color: #fff; font-weight: bold;">Conversation</h3>
         {% for message in messages %}
-            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+            <div 
+                class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}" 
+                style="{% if not message.is_read and message.receiver == request.user %}background-color: #e6f7ff; font-weight: bold;{% endif %}"
+            >
                 <strong>{{ message.sender.username }}</strong><br>
                 {{ message.content }}<br>
-                <small>{{ message.timestamp|date:"M d, Y H:i" }}</small>
+                <small>{{ message.timestamp|localtime|date:"M d, Y h:i A" }}</small>
+
+
+                {% if message.sender == request.user %}
+                    {% if message.is_read %}
+                        <span style="color: green; font-weight: bold; margin-left: 10px;">✓ Seen</span>
+                    {% else %}
+                        <span style="color: white; margin-left: 10px;">✓ Sent</span>
+                    {% endif %}
+                {% endif %}
             </div>
+
         {% empty %}
             <p>No messages yet.</p>
         {% endfor %}

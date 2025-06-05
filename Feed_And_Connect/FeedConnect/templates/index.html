@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -73,6 +74,16 @@
         color: white;
     }
 
+    .comment-box {
+        height: 30px;
+        padding: 5px;
+        background-color: #ced4da;
+        font-size: 14px;
+        resize: none; /* optional: prevents resizing */
+        
+    }
+    
+
 </style>
 
 
@@ -130,25 +141,26 @@
                          <div uk-dropdown="pos: top-right;mode:click ; animation: uk-animation-slide-bottom-small" class="dropdown-box">
 
                             <!-- notivication header -->
-                            <div class="dropdown-header">
-                                <h4>Upload Pics</h4>
+                            <div class="p-0 m-0">
+                                <h4 style="color: white; margin: 0; padding: 0;">Upload Pics</h4>
                             </div>
+
                         
                             <!-- notification contents -->
                             <div class="dropdown-content">
                         
                                 <div class="upload-form">
                         
-                                    <div class="upload-box">
+                                    {% comment %} <div class="upload-box">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="upload-icon">
                                             <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z" />
                                             <path d="M9 13h2v5a1 1 0 11-2 0v-5z" />
                                         </svg>
-                                    </div>
+                                    </div> {% endcomment %}
                         
                                     <form action="upload" method="POST" enctype="multipart/form-data">
                                         {% csrf_token %}
-                                        <p class="upload-text" style="color: white">Upload pics</p>
+                                        {% comment %} <p class="upload-text" style="color: white">Upload pics</p> {% endcomment %}
                                         <input type="file" name="image_upload" class="upload-input">
                                         <textarea class="caption-area" name="caption" placeholder="caption..."></textarea>
                                         <br>
@@ -185,9 +197,9 @@
                         
                             </div>
                         
-                            <div class="dropdown-footer">
+                            {% comment %} <div class="dropdown-footer">
                                 Your Image size Must be Maximum 100MB
-                            </div>
+                            </div> {% endcomment %}
                         </div>
                         
                          <!-- Notification -->
@@ -279,16 +291,20 @@
                             <!-- post header-->
                             <div class="flex justify-between items-center px-4 py-3">
                                 <div class="flex flex-1 items-center space-x-4">
-                                    {% comment %} <a href="#">
-                                        <div class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full">  
-                                            <img src="{% static 'assets/images/avatars/avatar-2.jpg' %}" class="bg-gray-200 border border-white rounded-full w-8 h-8">
-                                        </div>
-                                    </a> {% endcomment %}
-                                    <span class="block font-semibold"><a href="/profile/{{post.user}}" style="color: black;">@{{post.user}}</a></span>
-
+                                {% comment %} Avatar or other items can stay here {% endcomment %}
+                                <div class="flex flex-col leading-tight">
+                                    <span class="block font-semibold">
+                                        <a href="/profile/{{post.user}}" style="color: black;">@{{post.user}}</a>
+                                    </span>
+                                    <small style="color: gray;">{{ post.created_at|date:"F j, Y, g:i a" }}</small>
                                 </div>
+                            </div>
+
                               <div>
-                                <a href="#"> <i class="icon-feather-more-horizontal text-2xl hover:bg-gray-200 rounded-full p-2 transition -mr-1 "></i> </a>
+                                {% comment %} <a href="#"> 
+                                <i class="icon-feather-more-horizontal text-2xl hover:bg-gray-200 rounded-full p-2 transition -mr-1" style="color: black;"></i> 
+                                </a> {% endcomment %}
+
                                 <div class="bg-white w-56 shadow-md mx-auto p-2 mt-12 rounded-md text-gray-500 hidden text-base border border-gray-100  " uk-drop="mode: hover;pos: top-right">
                               
                                     <ul class="space-y-1">
@@ -465,6 +481,32 @@
                                     <a href="/profile/{{post.user}}" style="color: black;"><strong>{{post.user}}</strong></a>
                                     <span style="color: gray;">{{post.caption}}</span>
                                 </p>
+
+                                <!-- Comments Section -->
+                                <div class="mt-4 px-4">
+                                    <form method="POST" action="{% url 'add_comment' post.id %}">
+                                        {% csrf_token %}
+                                        <input type="text" name="comment" placeholder="Write a comment..." class="comment-box">
+
+                                        <button type="submit" class="mt-2 px-4 py-1 bg-gray-300 text-gray-700 rounded-md">Submit</button>
+
+                                    </form>
+
+                                    <!-- Display Comments -->
+                                    <div class="mt-4 space-y-2">
+                                        {% for comment in post.comments.all %}
+                                            <div class="text-sm bg-gray-100 p-2 rounded">
+                                            <strong class="text-black">@{{ comment.user.username }}</strong>: 
+                                            <span class="text-black">{{ comment.text }}</span>
+                                            <div class="text-xs text-gray-500">{{ comment.created_at|date:"F j, Y" }}</div>
+                                        </div>
+
+                                        {% empty %}
+                                            <p class="text-sm text-gray-400">No comments yet.</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
 
 
                                 {% comment %} <div class="border-t pt-4 space-y-4 ">

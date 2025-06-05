@@ -153,20 +153,78 @@
 						<span style="color: #fff; font-size: 27px;"><b>{{user_post_length}} Posts</b></span>
 					{% endif %}
 
-					{% if user_followers == 0 or user_followers == 1 %}
-						<span style="color: #fff; font-size: 27px;"><b>{{user_followers}} follower</b></span>
-					{% else %}
-						<span style="color: #fff; font-size: 27px;"><b>{{user_followers}} followers</b></span>
-					{% endif %}
+					<span id="followers-count" style="cursor: pointer; color: #fff; font-size: 27px;" uk-toggle="target: #followers-modal">
+					<b>{{ user_followers }} follower{% if user_followers != 1 %}s{% endif %}</b>
+					</span>
 
-					<span style="color: #fff; font-size: 27px;"><b>{{user_following}} following</b></span>
+					<span id="following-count" style="cursor: pointer; color: #fff; font-size: 27px;" uk-toggle="target: #following-modal">
+					<b>{{ user_following }} following</b>
+					</span>
+
+
+					<!-- Followers Modal -->
+					<div id="followers-modal" uk-modal>
+					<div class="uk-modal-dialog uk-modal-body modal-gray-bg">
+						<h2 class="uk-modal-title" style="color: black;">Followers</h2>
+						<div class="list-group">
+						{% for user in followers_list %}
+							<a href="{% url 'profile' user.username %}" class="list-group-item list-group-item-action d-flex align-items-center">
+							{% with user.profile_set.first as profile %}
+								{% if profile and profile.profileimg %}
+								<img src="{{ profile.profileimg.url }}" alt="{{ user.username }}" style="width:40px; height:40px; border-radius:50%; object-fit: cover;">
+								{% else %}
+								<img src="/media/default_profile.png" alt="default profile" style="width:40px; height:40px; border-radius:50%; object-fit: cover;">
+								{% endif %}
+							{% endwith %}
+							<strong class="ms-2">{{ user.username }}</strong>
+							</a>
+						{% empty %}
+							<p class="text-muted">No followers yet.</p>
+						{% endfor %}
+						</div>
+
+						<button class="uk-button uk-button-default uk-modal-close" type="button" style="border: 1px solid gray; color: inherit;">Close</button>
+
+					</div>
+					</div>
+
+
+
+
+					<!-- Following Modal -->
+					<div id="following-modal" uk-modal>
+					<div class="uk-modal-dialog uk-modal-body">
+						<h2 class="uk-modal-title" style="color: black;">Following</h2>
+						<div class="list-group">
+						{% for user in following_list %}
+							<a href="{% url 'profile' user.username %}" class="list-group-item list-group-item-action d-flex align-items-center">
+							{% with user.profile_set.first as profile %}
+								{% if profile and profile.profileimg %}
+								<img src="{{ profile.profileimg.url }}" alt="{{ user.username }}" style="width:40px; height:40px; border-radius:50%; object-fit: cover;">
+								{% else %}
+								<img src="/media/default_profile.png" alt="default profile" style="width:40px; height:40px; border-radius:50%; object-fit: cover;">
+								{% endif %}
+							{% endwith %}
+							<strong class="ms-2">{{ user.username }}</strong>
+							</a>
+						{% empty %}
+							<p class="text-muted">Not following anyone yet.</p>
+						{% endfor %}
+						</div>
+
+
+						<button class="uk-button uk-button-default uk-modal-close" type="button" style="border: 1px solid gray; color: inherit;">Close</button>
+					</div>
+					</div>
+
+
 
 					<div style="margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap;">
 						{% if user_object.username == user.username %}
-						<a href="/settings" style="background-color: pink; color: #000; padding: 8px 16px; border-radius: 5px; text-decoration: none;">Account Settings</a>
-						<a href="#" uk-toggle="target: #upload-modal" style="background-color: pink; color: #000; padding: 8px 16px; border-radius: 5px; text-decoration: none;">Upload Post</a>
+						<a href="/settings" style="background-color: #adb5bd; color: #000; padding: 8px 16px; border-radius: 5px; text-decoration: none;">Account Settings</a>
+						<a href="#" uk-toggle="target: #upload-modal" style="background-color: #adb5bd; color: #000; padding: 8px 16px; border-radius: 5px; text-decoration: none;">Upload Post</a>
 						{% else %}
-						<button type="submit" style="background-color: #ffc0cb; border: #ffc0cb;">{{button_text}}</button>
+						<button type="submit" style="background-color: #adb5bd; border: #adb5bd;">{{button_text}}</button>
 						{% endif %}
 					</div>
 					</div>
@@ -273,6 +331,8 @@
 			</div>
 		</div>	
 	</section>
+
+			
 
 	
 	

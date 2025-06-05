@@ -9,6 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{% static 'assets/images/favicon.png' %}" rel="icon" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <title>Sign In - Feed n Connect</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,6 +28,27 @@
         min-height: 100vh;
         margin: 0;
     }
+    .relative {
+  position: relative;
+}
+
+.relative input {
+  height: 2.5rem; /* Set explicit height for consistent alignment */
+  line-height: 2.5rem;
+  padding-right: 2.5rem; /* Enough space for the icon */
+}
+
+.relative span {
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1.5rem; /* icon height */
+  width: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4B5563; /* gray-600 */
+}
+
 </style>
 
 
@@ -73,42 +95,45 @@
                 </div>
 
                 <form action="" method="POST">
-                    {% csrf_token %}
-                    <input type="text" name="username" placeholder="Username" class="bg-gray-200 mb-2 shadow-none dark:bg-gray-800" style="border: 1px solid #d3d5d8 !important;">
-                    <input type="password" name="password" placeholder="Password" class="bg-gray-200 mb-2 shadow-none dark:bg-gray-800" style="border: 1px solid #d3d5d8 !important;">
-                    {% comment %} <div class="flex justify-between my-4">
-                        <div class="checkbox">
-                            <input type="checkbox" id="chekcbox1" checked>
-                            <label for="chekcbox1"><span class="checkbox-icon"></span>Remember Me</label>
-                        </div>
-                        <a href="#"> Forgot Your Password? </a>
-                    </div> {% endcomment %}
-                    <button type="submit" class="bg-gradient-to-br from-blue-500 py-3 rounded-md text-white text-xl to-blue-400 w-full">Login</button>
-                    <div class="text-center mt-5 space-x-2">
-                        <p style="color: #082567; font-weight: bold;" class="text-base">
-                            Not registered?
-                            <a href="/signup" style="color: white; text-decoration: underline; font-weight: 400">Create an account</a>
-                        </p>
-                        
-                    </div>
-                </form>
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="Username"
+                    class="bg-gray-200 mb-2 shadow-none dark:bg-gray-800"
+                    style="border: 1px solid #d3d5d8 !important;">
+
+                <div class="relative mb-2" style="position: relative;">
+                <input type="password" id="passwordInput" name="password" placeholder="Password"
+                    class="bg-gray-200 shadow-none dark:bg-gray-800 w-full"
+                    style="border: 1px solid #d3d5d8 !important; height: 3.0rem; line-height: 2.5rem; padding-right: 2.5rem;">
+                <span onclick="togglePasswordVisibility()"
+                    style="position: absolute; top: 50%; right: 0.75rem; transform: translateY(-50%); height: 1.5rem; width: 1.5rem; display: flex; align-items: center; justify-content: center; color: #4B5563; cursor: pointer;">
+                    <i id="toggleIcon" class="fa-regular fa-eye"></i>
+                </span>
+            </div>
+
+
+                <button type="submit"
+                    class="bg-gradient-to-br from-blue-500 py-3 rounded-md text-white text-xl to-blue-400 w-full">Login</button>
+
+                <div class="text-center mt-5 space-x-2">
+                    <p style="color: #082567; font-weight: bold;" class="text-base">
+                        Not registered?
+                        <a href="/signup" style="color: white; text-decoration: underline; font-weight: 400">Create an account</a>
+                    </p>
+                </div>
+            </form>
             </div>
         </div>
         
         <!-- Footer -->
 
         <div class="lg:mb-5 py-3 uk-link-reset">
-            <div style="color: #212529;" class="flex flex-col items-center justify-between lg:flex-row max-w-6xl mx-auto lg:space-y-0 space-y-3">
-                <div class="flex space-x-2 uppercase">
-                    <a href="#" style="color: white; text-decoration: none; font-weight: bold;">About</a>
-                    <a href="#" style="color: white; text-decoration: none; font-weight: bold;">Help</a>
-                    <a href="#" style="color: white; text-decoration: none; font-weight: bold;">Terms</a>
-                    <a href="#" style="color: white; text-decoration: none; font-weight: bold;">Privacy</a>
+                <div class="max-w-6xl mx-auto flex justify-end">
+                    <p class="capitalize font-bold" style="color: #000;">
+                        © Copyright 2020 by Feed&Connect
+                    </p>
                 </div>
-                <p class="capitalize font-bold" style="color: #000;">© Copyright 2020 by Feed&Connect</p>
-            </div>
-            
         </div>
+
 
     </div>
 
@@ -152,6 +177,21 @@
 
     <!-- Scripts
     ================================================== -->
+    <script>
+    function togglePasswordVisibility() {
+        const input = document.getElementById("passwordInput");
+        const icon = document.getElementById("toggleIcon");
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+</script>
     <script src="{% static 'assets/js/tippy.all.min.js' %}"></script>
     <script src="{% static 'assets/js/jquery-3.3.1.min.js' %}"></script>
     <script src="{% static 'assets/js/uikit.js' %}"></script>

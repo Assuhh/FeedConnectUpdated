@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Pending Payment Confirmations</h2>
+
+{% if payments %}
+  <ul class="list-group">
+    {% for payment in payments %}
+      <li class="list-group-item">
+        <div>
+          <strong>{{ payment.item_type|title }} #{{ payment.item_id }}</strong> from 
+          <em>{{ payment.buyer.username }}</em><br>
+          Buyer: {{ payment.buyer.username }}  <br>
+          Reference #: {{ payment.reference_number }}
+        </div>
+        <div class="d-flex align-items-center mt-2">
+          {% if payment.screenshot %}
+            <a href="{{ payment.screenshot.url }}" target="_blank" class="me-3">
+              <img src="{{ payment.screenshot.url }}" alt="Payment Screenshot"
+                   style="max-width: 200px; max-height: 200px; border: 1px solid #ccc;" />
+            </a>
+          {% else %}
+            <em class="me-3">No screenshot uploaded.</em>
+          {% endif %}
+          <form action="{% url 'confirm_payment' payment.id %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary btn-sm">Confirm Payment</button>
+        </form>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No payments pending confirmation.</p>
+{% endif %}
+{% endblock %}

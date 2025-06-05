@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Buy Now: {{ product.name }}</h2>
+<p><strong>Price per item:</strong> ₱{{ product.price }}</p>
+<p><strong>Available stock:</strong> {{ product.stock }}</p>
+
+<form method="post" action="{% url 'buy_now' 'product' product.id %}">
+    {% csrf_token %}
+    <label for="quantity">Quantity:</label>
+    <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}" required>
+    <p><strong>Total Price:</strong> ₱<span id="totalPrice">{{ product.price }}</span></p>
+    <button type="submit">Proceed to Payment</button>
+</form>
+
+<script>
+  const price = parseFloat("{{ product.price|floatformat:2 }}");
+  const stock = parseInt("{{ product.stock }}");
+  const quantityInput = document.getElementById('quantity');
+  const totalPriceEl = document.getElementById('totalPrice');
+  const warningEl = document.getElementById('stock-warning');
+
+  quantityInput.addEventListener('input', () => {
+    const qty = parseInt(quantityInput.value);
+    if (qty > stock) {
+      warningEl.style.display = 'block';
+    } else {
+      warningEl.style.display = 'none';
+    }
+    totalPriceEl.innerText = (qty * price).toFixed(2);
+  });
+</script>
+
+{% endblock %}

@@ -1,5 +1,9 @@
 from django.urls import path
 from . import views
+from django.conf.urls.static import static
+from django.conf import settings
+from .views import get_followers, get_following
+from .views import record_scheduled_feed
 
 urlpatterns = [
     path('', views.signin, name='signin'),
@@ -19,10 +23,22 @@ urlpatterns = [
     # path('feed', views.feed, name='feed'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('history/', views.feed_history, name= 'feed_history'),
+
+    path('record-scheduled-feed/', record_scheduled_feed, name='record_scheduled_feed'),
+
     path('dashboard1/', views.dashboard_1, name='dashboard_1'),
     path('history1/', views.feed_history1, name= 'feed_history1'),
     path('main_page', views.main_page, name='maine page'),
     path('marketplace/', views.marketplace, name='marketplace'),
+    path('my-profile/', views.seller_profile, name='seller_profile'),
+    path('my-payments/', views.my_payments, name='my_payments'),
+    path('buy-now/<str:item_type>/<int:item_id>/', views.buy_now, name='buy_now'),
+    path('payment-success/', views.payment_success, name='payment_success'),
+    path('payment-confirmations/', views.payment_confirmations, name='payment_confirmations'),
+    path('payment-confirmations/<int:payment_id>/', views.confirm_payment, name='confirm_payment'),
+    path('payment/', views.payment, name='payment'),
+
+
     # Messaging
     path('inbox/', views.inbox, name='inbox'),
     path('conversation/<int:conversation_id>/', views.conversation_detail, name='conversation_detail'),
@@ -39,5 +55,10 @@ urlpatterns = [
     path('message/<int:receiver_id>/<int:service_id>/', views.send_message, name='send_message'),
     path('delete-product/<int:index>/', views.delete_product, name='delete_product'),
     path('delete-service/<int:index>/', views.delete_service, name='delete_service'),
+    path('profile/<str:username>/followers/', get_followers, name='get_followers'),
+    path('profile/<str:username>/following/', get_following, name='get_following'),
+    path('product/<int:product_id>/rate/', views.rate_product, name='rate_product'),
+    path('comment/<uuid:post_id>/', views.add_comment, name='add_comment'),
 
 ]
+

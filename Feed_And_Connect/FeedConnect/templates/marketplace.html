@@ -3,13 +3,78 @@
 {% block title %}Marketplace - Pet Feeder{% endblock %}
 
 {% block content %}
+
+<style>
+.product-box {
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.product-image {
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.product-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.product-desc {
+  font-size: 0.9rem;
+  color: #666;
+  flex-grow: 1;
+}
+
+.product-price {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-stock {
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 0.5rem;
+}
+
+.seller-location {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.seller-link {
+  font-size: 0.85rem;
+  color: #007bff;
+  text-decoration: underline;
+}
+.seller-link:hover {
+  text-decoration: none;
+}
+
+.btn-outline-white {
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    background-color: transparent;
+}
+
+.btn-outline-white:hover {
+    background-color: #ffffff;
+    color: #000000; /* optional: black text on white background when hovered */
+}
+
+
+</style>
+
 <h1 style="text-align: center; margin-bottom: 1.5rem; font-size: 2rem; color: #fff; font-weight: bold;">Marketplace</h1>
 
 <!-- Post New Product/Service Button -->
 <div style="text-align: center; margin: 1.5rem 0;">
     <a href="{% url 'post_item' %}" 
        style="background-color: gray; color: white; font-size: 1.25rem; padding: 1rem 3rem; border-radius: 0.5rem; text-decoration: none; display: inline-block; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);">
-        <i class="bi bi-plus-circle" style="margin-right: 0.5rem;"></i>Post New Product or Service
+        <i class="bi bi-plus-circle" style="margin-right: 0.5rem;"></i>Post New Product
     </a>
 </div>
 
@@ -35,74 +100,116 @@
 <!-- Products -->
 <h3 style="font-size: 1.5rem; margin-top: 2rem; color: #fff; font-weight: bold;">Products</h3>
 <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-    {% for product in products %}
-    <div style="flex: 1 1 calc(33.333% - 1rem); box-sizing: border-box;">
-        <div class="product-card">
-            {% if product.status == 'sold' %}
-                <span style="position: absolute; top: 10px; right: 10px; background-color: red; color: white; padding: 0.25rem 0.75rem; border-radius: 999px;">SOLD</span>
-            {% else %}
-                <span style="position: absolute; top: 10px; right: 10px; background-color: green; color: white; padding: 0.25rem 0.75rem; border-radius: 999px;">SELLING</span>
-            {% endif %}
-            {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover; display: block; border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
-            {% endif %}
-            <div style="padding: 1rem;">
-                <h5 style="margin-top: 0; font-size: 1.25rem; color: #fff; font-weight: bold;">{{ product.name }}</h5>
-                <p style="color: #fff; margin: 0.25rem 0;">Price: ₱{{ product.price }}</p>
-                <p style="color: #fff; margin: 0.25rem 0;">Stock: {{ product.stock }}</p>
-
-                {% if request.user == product.seller %}
-                    <a href="{% url 'edit_product' product.id %}" class="btn w-100 mt-2" style="background-color: #adb5bd; color: black;">Edit</a>
-                {% else %}
-                    <div class="d-flex justify-content-between gap-2 mt-3">
-                        <a href="{% url 'product_detail' product.id %}" class="flex-fill btn" style="background-color: #adb5bd; color: black;">View Detail</a>
-                        <a href="{% url 'send_message' receiver_id=product.seller.id item_type='product' item_id=product.id %}" class="flex-fill btn" style="background-color: gray; color: white;">Chat Seller</a>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <p style="color: white;">No products found.</p>
-    {% endfor %}
-</div>
-
-<!-- Service Listings -->
-<h3 style="font-size: 1.5rem; margin-top: 2rem; color: #fff; font-weight: bold;">Services</h3>
-<div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-  {% for service in services %}
-  <div style="flex: 1 1 calc(33.333% - 1rem); box-sizing: border-box;">
-    <div class="product-card">
+  {% for product in products %}
+  <div class="product" data-product-id="{{ product.id }}" style="flex: 0 0 calc(33.333% - 1rem); max-width: calc(33.333% - 1rem); box-sizing: border-box; position: relative;">
+    <div class="product-card" style="border-radius: 0.5rem; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
       
-      {% comment %} {% if service.status == 'sold' %}
+      {% if product.stock == 0 %}
         <span style="position: absolute; top: 10px; right: 10px; background-color: red; color: white; padding: 0.25rem 0.75rem; border-radius: 999px;">SOLD</span>
       {% else %}
         <span style="position: absolute; top: 10px; right: 10px; background-color: green; color: white; padding: 0.25rem 0.75rem; border-radius: 999px;">SELLING</span>
-      {% endif %} {% endcomment %}
-
-      {% if service.image %}
-        <img src="{{ service.image.url }}" alt="{{ service.name }}" style="width: 100%; height: 200px; object-fit: cover; display: block; border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
       {% endif %}
-      <div style="padding: 1rem;">
-        <h5 style="margin-top: 0; font-size: 1.25rem; color: #fff; font-weight: bold;">{{ service.name }}</h5>
-        <p style="color: #fff; margin: 0.25rem 0;">Service</p>
-        <p style="color: #fff; margin: 0.25rem 0;">Price: ₱{{ service.price }}</p>
 
-        {% if request.user == service.seller %}
-          <a href="{% url 'edit_service' service.id %}" class="btn w-100 mt-2" style="background-color: #adb5bd; color: black;">Edit</a>
+      {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}"
+             onclick="openImageModal('{{ product.image.url }}')"
+             style="cursor: pointer; width: 100%; height: 200px; object-fit: cover; display: block;">
+      {% endif %}
+
+      <div style="padding: 1rem;">
+        <h5 style="margin-top: 0; font-size: 1.25rem; color: #fff; font-weight: bold;">{{ product.name }}</h5>
+        <p style="color: #fff; margin: 0.25rem 0;">Product</p>
+        
+        {% if product.seller_profile and product.seller_profile.location %}
+        <p><strong>Location:</strong> {{ product.seller_profile.location }}</p>
         {% else %}
-          <div class="d-flex justify-content-between gap-2 mt-3">
-            <a href="{% url 'service_detail' service.id %}" class="flex-fill btn" style="background-color: #adb5bd; color: black;">View Detail</a>
-            <a href="{% url 'send_message' receiver_id=service.seller.id item_type='service' item_id=service.id %}" class="flex-fill btn" style="background-color: gray; color: white;">Chat Seller</a>
-          </div>
+        <p><strong>Location:</strong> Not provided</p>
         {% endif %}
+
+
+
+        <p style="color: #fff; margin: 0.25rem 0;"><strong>Price:</strong> ₱{{ product.price }}</p>
+        <p style="color: #fff; margin: 0.25rem 0;"><strong>Stock:</strong> {{ product.stock }}</p>
+
+        <!-- ⭐ Star Rating -->
+        <form method="POST" action="{% url 'rate_product' product.id %}">
+          {% csrf_token %}
+          <div class="star-rating">
+            {% for i in "54321"|make_list %}
+              <input type="radio" id="star{{ product.id }}-{{ i }}" name="rating-{{ product.id }}" value="{{ i }}" />
+              <label for="star{{ product.id }}-{{ i }}">&#9733;</label>
+            {% endfor %}
+          </div>
+          {% comment %} <button type="submit">Rate</button> {% endcomment %}
+        </form>
+        <p class="rating-value" style="color: #fff; margin-top: 0.5rem;">You rated: 0 stars</p>
+
+        {% if request.user == product.seller %}
+          <a href="{% url 'edit_product' product.id %}" class="btn w-100 mt-2" style="background-color: #adb5bd; color: black;">Edit</a>
+        {% else %}
+        <div class="d-flex justify-content-between mb-2">
+          <a href="{% url 'product_detail' product.id %}" class="btn btn-sm flex-grow-1 me-2 btn-outline-white">View Detail</a>
+          <a href="{% url 'send_message' receiver_id=product.seller.id item_type='product' item_id=product.id %}" class="btn btn-primary btn-sm flex-grow-1">Chat Seller</a>
+        </div>
+        <a href="{% url 'product_detail' product.id %}?buy_now=1" class="btn btn-success w-100 btn-sm">Buy Now</a>
+
+      {% endif %}
       </div>
     </div>
   </div>
   {% empty %}
-    <p style="color: white;">No services found.</p>
+    <p style="color: white;">No products found.</p>
   {% endfor %}
 </div>
 
+
+<!-- Image Modal -->
+<div id="imageModal" onclick="closeImageModal()" 
+     style="display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center;">
+    <img id="modalImage" src="" style="max-width: 90%; max-height: 90%; border: 4px solid #fff; border-radius: 8px;">
+</div>
+
+<script>
+function openImageModal(url) {
+    var modal = document.getElementById('imageModal');
+    var modalImg = document.getElementById('modalImage');
+    modalImg.src = url;
+    modal.style.display = 'flex';
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+</script>
+
+<script>
+  // Star rating interaction for all products
+  document.querySelectorAll('.product').forEach(product => {
+    const productId = product.getAttribute('data-product-id');
+    const starRating = product.querySelector('.star-rating');
+    const ratingValue = product.querySelector('.rating-value');
+    const stars = starRating.querySelectorAll('input[type="radio"]');
+
+    // Restore saved rating for this product from localStorage
+    const savedRating = localStorage.getItem(`star-rating-${productId}`);
+    if (savedRating) {
+      const starToCheck = starRating.querySelector(`input[value="${savedRating}"]`);
+      if (starToCheck) {
+        starToCheck.checked = true;
+        ratingValue.textContent = `You rated: ${savedRating} star${savedRating > 1 ? 's' : ''}`;
+      }
+    }
+
+    // Listen for changes, update localStorage and UI
+    stars.forEach(radio => {
+      radio.addEventListener('change', e => {
+        const value = e.target.value;
+        localStorage.setItem(`star-rating-${productId}`, value);
+        ratingValue.textContent = `You rated: ${value} star${value > 1 ? 's' : ''}`;
+      });
+    });
+  });
+</script>
 
 {% endblock %}

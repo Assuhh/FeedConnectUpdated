@@ -1,20 +1,26 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-from .models import Profile, Post, LikePost, FollowersCount 
-from .models import FeedHistory, FeedingSchedule, Product, Service, Message, Conversation
-from .forms import ProductForm, ServiceForm, MessageForm
+from .models import Profile, Post, LikePost, FollowersCount, Comment, Conversation, Message
+from .models import FeedHistory, FeedingSchedule, Product, Service, Message, Conversation, ProductRating, PaymentProof, SellerProfile
+from .forms import ProductForm, ServiceForm, MessageForm, PaymentProofForm, SellerProfileForm
+from django.views.decorators.http import require_POST
 from itertools import chain
+from django.core.paginator import Paginator
 import random
 import requests
 import time
+import calendar
+import json
+from datetime import timedelta
+from django.utils.timezone import localtime
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout as django_logout
-from django.db.models import Q, Max
+from django.db.models import Q, Max, Count
 from .models import FeedHistory
 from collections import defaultdict
 from django.http import JsonResponse
@@ -350,8 +356,49 @@ def dashboard_1(request):
 
 def feed_history1(request):
     feed_history = FeedHistory.objects.all().order_by('-timestamp')
-    return render(request, 'feed_history1.html', {'feed_history': feed_history})
+    
+    # Optional: Filtering by range (last 7 or 30 days)
+    range_days = request.GET.get('range')
+    if range_days and range_days.isdigit():
+        days = int(range_days)
+        cutoff_date = datetime.now() - timedelta(days=days)
+        feed_history = feed_history.filter(timestamp__gte=cutoff_date)
+    
+    # Optional: Filtering by month
+    month = request.GET.get('month')
+    if month and month.isdigit():
+        month_num = int(month)
+        feed_history = feed_history.filter(timestamp__month=month_num)
+    
+    # Paginate feed_history, 12 items per page
+    paginator = Paginator(feed_history, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    month_choices = [(i, calendar.month_name[i]) for i in range(1, 13)]
+    
+    context = {
+        'feed_history': page_obj,  # pass page_obj for pagination in template
+        'page_obj': page_obj,
+        'month_choices': month_choices,
+    }
+    
+    return render(request, 'feed_history1.html', context)
 
+@csrf_exempt
+def record_scheduled_feed(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            amount = int(data.get('amount', 0))
+            FeedHistory.objects.create(
+                amount=amount,
+                feed_type='scheduled'
+            )
+            return JsonResponse({'status': 'success'}, status=200)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 def edit_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
@@ -382,16 +429,190 @@ def edit_service(request, pk):
         form = ServiceForm(instance=service)
 
     return render(request, 'edit_service.html', {'form': form})
+
+#NEW#
+@login_required(login_url='signin')
+def seller_profile(request):
+    profile, created = SellerProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = SellerProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('seller_profile')  # redirect to reload the updated data
+    else:
+        form = SellerProfileForm(instance=profile)
+
+    return render(request, 'seller_profile.html', {
+        'profile': profile,
+        'form': form,
+    })
+
+@login_required(login_url='signin')   
+def payment_success(request):
+    return render(request, 'payment_success.html')
+
+
+@login_required(login_url='signin')
+def buy_now(request, item_type, item_id):
+    if item_type != 'product':
+        messages.error(request, "Invalid item type.")
+        return redirect('marketplace')
+
+    product = get_object_or_404(Product, id=item_id)
+
+    if request.method == 'POST':
+        try:
+            quantity = int(request.POST.get('quantity', 1))
+        except ValueError:
+            messages.error(request, "Invalid quantity.")
+            return redirect('product_detail', pk=item_id)
+
+        if quantity < 1 or quantity > product.stock:
+            messages.error(request, "Invalid quantity.")
+            return redirect('product_detail', pk=item_id)
+
+        total_price = product.price * quantity
+
+        # Save order info to session for payment page use
+        request.session['order'] = {
+            'product_id': product.id,
+            'quantity': quantity,
+            'total_price': float(total_price),
+        }
+
+        # Redirect to payment page WITHOUT product_id in URL
+        return redirect('payment')
+
+    # if GET, redirect to product detail page
+    return redirect('product_detail', pk=item_id)
+
+@login_required(login_url='signin')
+def payment(request):
+    order = request.session.get('order')
+    if not order:
+        messages.error(request, "No order found. Please start your purchase again.")
+        return redirect('marketplace')
+
+    # Retrieve product and order info
+    product = get_object_or_404(Product, pk=order['product_id'])
+    seller_profile = getattr(product.seller, 'sellerprofile', None)
+    quantity = order.get('quantity', 1)
+    total_price = order.get('total_price', product.price)
+
+    if request.method == 'POST':
+        form = PaymentProofForm(request.POST, request.FILES)
+        if form.is_valid():
+            payment_proof = form.save(commit=False)
+
+            # **Correctly assign the real model fields:**
+            payment_proof.buyer = request.user
+            payment_proof.seller = product.seller
+            payment_proof.item_type = 'product'
+            payment_proof.item_id = product.id
+            # (Optional) store quantity/price on the proof if you extend the model
+            # payment_proof.quantity = quantity
+            # payment_proof.total_price = total_price
+
+            payment_proof.save()
+
+            # Clear the saved order
+            del request.session['order']
+
+            return redirect('payment_success')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = PaymentProofForm()
+
+    return render(request, 'payment.html', {
+        'product': product,
+        'seller_profile': seller_profile,
+        'form': form,
+        'quantity': quantity,
+        'total_price': total_price,
+    })
+
+
+@login_required(login_url='signin')   
+def seller_payments(request):
+    # Only show payments where current user is the seller
+    payments = PaymentProof.objects.filter(seller=request.user).order_by('-created_at')
+    return render(request, 'seller_payments.html', {'payments': payments})
+
+@login_required(login_url='signin')
+@require_POST
+def confirm_payment(request, payment_id):
+    payment = get_object_or_404(PaymentProof, id=payment_id)
+
+    if request.user != payment.seller:
+        return HttpResponseForbidden("You are not allowed to confirm this payment.")
+
+    payment.is_confirmed = True
+    payment.save()
+    print(f"Payment {payment_id} confirmed by {request.user}")
+
+    product = get_object_or_404(Product, id=payment.item_id)
+
+    conversations = (
+        Conversation.objects.annotate(num_participants=Count("participants"))
+        .filter(participants=payment.buyer)
+        .filter(participants=payment.seller)
+        .filter(num_participants=2)
+    )
+
+    if conversations.exists():
+        conversation = conversations.first()
+    else:
+        conversation = Conversation.objects.create()
+        conversation.participants.add(payment.buyer, payment.seller)
+    print(f"Using conversation ID: {conversation.id}")
+
+    conversation.products.add(product)
+
+    Message.objects.create(
+        sender=payment.seller,
+        receiver=payment.buyer,
+        content=f"Hi! Your payment for '{product.name}' has been confirmed. Thank you for your purchase!",
+        conversation=conversation,
+        product=product,
+    )
+    print("Confirmation message sent.")
+
+    return redirect('inbox')
+
+@login_required(login_url='signin')
+def payment_confirmations(request):
+    # Show only unconfirmed payments where the current user is the seller
+    pending = PaymentProof.objects.filter(seller=request.user, is_confirmed=False)
+    return render(request, 'payment_confirmations.html', {'payments': pending})
+
+@login_required(login_url='signin')
+def my_payments(request):
+    payments = PaymentProof.objects.filter(buyer=request.user).order_by('-created_at')
+    
+    enriched_payments = []
+    for payment in payments:
+        item = None
+        if payment.item_type == 'product':
+            item = Product.objects.filter(id=payment.item_id).first()
+        elif payment.item_type == 'service':
+            item = Service.objects.filter(id=payment.item_id).first()
+
+        enriched_payments.append({
+            'payment': payment,
+            'item': item
+        })
+
+    return render(request, 'my_payments.html', {'enriched_payments': enriched_payments})
+
 #Marketplace
+@login_required(login_url='signin')
 def marketplace(request):
     query = request.GET.get('q', '')
     sort_option = request.GET.get('sort', 'date')
     category_filter = request.GET.get('category', '')
-    products = Product.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    services = Service.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
-
-    print("Fetched products:", products)  # Debugging: Check products fetched
-    print("Fetched services:", services)  # Debugging: Check services fetched
 
     # Products
     products = Product.objects.all()
@@ -415,10 +636,17 @@ def marketplace(request):
     else:
         services = services.order_by('-created_at')
 
-    # Combine category choices from both models
+    # ✅ Attach SellerProfile after final product filtering
+    seller_ids = products.values_list('seller_id', flat=True).distinct()
+    seller_profiles = SellerProfile.objects.filter(user_id__in=seller_ids)
+    profiles_dict = {profile.user_id: profile for profile in seller_profiles}
+
+    for product in products:
+        product.seller_profile = profiles_dict.get(product.seller_id)
+
+    # Combine categories
     product_categories = dict(Product.CATEGORY_CHOICES)
     service_categories = dict(Service.CATEGORY_CHOICES)
-
     combined_categories = {**product_categories, **service_categories}
 
     return render(request, 'marketplace.html', {
@@ -427,9 +655,25 @@ def marketplace(request):
         'query': query,
         'selected_category': category_filter,
         'sort_option': sort_option,
-        'categories': combined_categories,  # pass this to template
+        'categories': combined_categories,
     })
 
+
+@login_required
+def rate_product(request, product_id):
+    if request.method == "POST":
+        product = get_object_or_404(Product, id=product_id)
+        rating = int(request.POST.get('rating', 0))
+
+        # Allow users to rate any product, even their own
+        if 1 <= rating <= 5:
+            ProductRating.objects.update_or_create(
+                user=request.user,
+                product=product,
+                defaults={'rating': rating}
+            )
+
+    return redirect('marketplace')
 
 
 @login_required(login_url='signin')
@@ -446,6 +690,13 @@ def post_item(request):
             if product_form.is_valid():
                 product = product_form.save(commit=False)
                 product.seller = request.user
+
+                # Add seller location from SellerProfile
+                try:
+                    product.location = request.user.sellerprofile.location
+                except SellerProfile.DoesNotExist:
+                    product.location = ''  # fallback if no seller profile
+
                 product.save()
                 return redirect('marketplace')
 
@@ -501,6 +752,9 @@ def conversation_detail(request, conversation_id):
     if request.user not in conversation.participants.all():
         return redirect('inbox')
 
+    # ✅ Mark all unread messages sent *to the user* as read
+    conversation.messages.filter(receiver=request.user, is_read=False).update(is_read=True)
+
     messages = conversation.messages.all().order_by('timestamp')
     form = MessageForm()
 
@@ -519,15 +773,15 @@ def conversation_detail(request, conversation_id):
             )
             return redirect('conversation_detail', conversation_id=conversation_id)
 
-    # Handle inquired product or service with ManyToManyField
+    # Handle inquired product or service
     inquired_item_url = None
     inquired_item_id = None
     if conversation.products.exists():
         inquired_item_url = 'product_detail'
-        inquired_item_id = conversation.products.first().id  # Get the ID of the first product
+        inquired_item_id = conversation.products.first().id
     elif conversation.services.exists():
         inquired_item_url = 'service_detail'
-        inquired_item_id = conversation.services.first().id  # Get the ID of the first service
+        inquired_item_id = conversation.services.first().id
 
     context = {
         'conversation': conversation,
@@ -604,10 +858,15 @@ def send_message(request, receiver_id, item_type, item_id):
 @login_required(login_url='signin')
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
+    # fetch seller profile if exists
+    try:
+        seller_profile = SellerProfile.objects.get(user=product.seller)
+    except SellerProfile.DoesNotExist:
+        seller_profile = None
+
     context = {
         'product': product,
-        # 'has_colors': product.has_colors,
-        # 'color_options': product.color_options,
+        'seller_profile': seller_profile,
     }
     return render(request, 'product_detail.html', context)
 
@@ -750,9 +1009,7 @@ def profile(request, pk):
     user_object = User.objects.get(username=pk)
     user_profile = Profile.objects.get(user=user_object)
 
-    # Order posts by latest first, assuming your Post model has a datetime field like 'created_at'
     user_posts = Post.objects.filter(user=user_object).order_by('-created_at')
-
     user_post_length = user_posts.count()
 
     follower = request.user.username
@@ -763,8 +1020,12 @@ def profile(request, pk):
     else:
         button_text = 'Follow'
 
-    user_followers = FollowersCount.objects.filter(user=pk).count()
-    user_following = FollowersCount.objects.filter(follower=pk).count()
+    user_followers = FollowersCount.objects.filter(user=pk)
+    user_following = FollowersCount.objects.filter(follower=pk)
+
+    # Get actual User objects from FollowersCount
+    followers_list = [User.objects.get(username=f.follower) for f in user_followers]
+    following_list = [User.objects.get(username=f.user) for f in user_following]
 
     context = {
         'user_object': user_object,
@@ -772,11 +1033,52 @@ def profile(request, pk):
         'user_posts': user_posts,
         'user_post_length': user_post_length,
         'button_text': button_text,
-        'user_followers': user_followers,
-        'user_following': user_following,
+        'user_followers': user_followers.count(),
+        'user_following': user_following.count(),
+        'followers_list': followers_list,
+        'following_list': following_list,
     }
     return render(request, 'profile.html', context)
 
+
+@login_required(login_url='signin')
+def get_followers(request, username):
+    followers_qs = FollowersCount.objects.filter(user=username)
+    followers = []
+    for f in followers_qs:
+        try:
+            user_obj = User.objects.get(username=f.follower)
+            followers.append({
+                'username': user_obj.username,
+                'profile_url': f'/profile/{user_obj.username}',  # example link to profile
+            })
+        except User.DoesNotExist:
+            continue
+    return JsonResponse({'followers': followers})
+
+@login_required(login_url='signin')
+def get_following(request, username):
+    following_qs = FollowersCount.objects.filter(follower=username)
+    following = []
+    for f in following_qs:
+        try:
+            user_obj = User.objects.get(username=f.user)
+            following.append({
+                'username': user_obj.username,
+                'profile_url': f'/profile/{user_obj.username}',
+            })
+        except User.DoesNotExist:
+            continue
+    return JsonResponse({'following': following})
+
+
+def add_comment(request, post_id):
+    if request.method == "POST":
+        post = get_object_or_404(Post, id=post_id)
+        text = request.POST.get("comment")
+        if text:
+            Comment.objects.create(post=post, user=request.user, text=text)
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 @login_required(login_url='signin')
 def follow(request):
@@ -800,29 +1102,24 @@ def settings(request):
     user_profile = Profile.objects.get(user=request.user)
 
     if request.method == 'POST':
+        image = request.FILES.get('image') or user_profile.profileimg
+        bio = request.POST.get('bio')
+        location = request.POST.get('location')
 
-        if request.FILES.get('image') == None:
-            image = user_profile.profileimg
-            bio = request.POST['bio']
-            location = request.POST['location']
+        first_time = not user_profile.profile_complete  # Check if first time setup
 
-            user_profile.profileimg = image
-            user_profile.bio = bio
-            user_profile.location = location
-            user_profile.save()
-        if request.FILES.get('image') != None:
-            image = request.FILES.get('image')
-            bio = request.POST['bio']
-            location = request.POST['location']
+        user_profile.profileimg = image
+        user_profile.bio = bio
+        user_profile.location = location
+        user_profile.profile_complete = True  # Mark as complete
+        user_profile.save()
 
-            user_profile.profileimg = image
-            user_profile.bio = bio
-            user_profile.location = location
-            user_profile.save()
-        
-        return redirect('settings')
+        if first_time:
+            return redirect('main page')  # Redirect only once after setup
+        else:
+            return redirect('index')  # Stay on settings after future edits
+
     return render(request, 'setting.html', {'user_profile': user_profile})
-
 def signup(request):
 
     if request.method == 'POST':
