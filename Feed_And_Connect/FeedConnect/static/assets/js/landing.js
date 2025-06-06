@@ -16,108 +16,306 @@ const breedData = {
             idealCBMImin: 65,
             idealCBMImax: 75,
             food: {
-                underweight: { name: "Purina Pro Plan Sport", gramsPerDay: 350 },
-                normal: { name: "Royal Canin Labrador Retriever Adult", gramsPerDay: 300 },
-                overweight: { name: "Hill's Science Diet Perfect Weight", gramsPerDay: 250 }
+                underweight: { name: "High Protein Dog Food", gramsPerDay: 350 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 300 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 250 }
             }
         },
         "Golden Retriever": {
             idealCBMImin: 65,
             idealCBMImax: 75,
             food: {
-                underweight: { name: "Purina ONE High Protein", gramsPerDay: 340 },
-                normal: { name: "Purina Pro Plan Large Breed", gramsPerDay: 310 },
-                overweight: { name: "Hill’s Science Diet Light", gramsPerDay: 270 }
+                underweight: { name: "High Protein Dog Food", gramsPerDay: 340 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 310 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 270 }
             }
         },
         "Beagle": {
             idealCBMImin: 20,
             idealCBMImax: 26,
             food: {
-                underweight: { name: "Iams Minichunks", gramsPerDay: 240 },
-                normal: { name: "Iams ProActive Health Small to Medium Breed", gramsPerDay: 200 },
-                overweight: { name: "Hill's Science Diet Perfect Weight Small & Mini", gramsPerDay: 170 }
+                underweight: { name: "Small Breed Puppy Food", gramsPerDay: 240 },
+                normal: { name: "Small to Medium Breed Adult Food", gramsPerDay: 200 },
+                overweight: { name: "Weight Management Small Breed Food", gramsPerDay: 170 }
             }
         },
         "Pomeranian": {
             idealCBMImin: 28,
             idealCBMImax: 35,
             food: {
-                underweight: { name: "Royal Canin Small Puppy", gramsPerDay: 150 },
-                normal: { name: "Wellness CORE Small Breed", gramsPerDay: 130 },
-                overweight: { name: "Hill's Science Diet Adult Light Small Bites", gramsPerDay: 110 }
+                underweight: { name: "Small Breed Puppy Food", gramsPerDay: 150 },
+                normal: { name: "Small Breed Adult Food", gramsPerDay: 130 },
+                overweight: { name: "Weight Management Small Breed Food", gramsPerDay: 110 }
             }
         },
         "Dachshund": {
             idealCBMImin: 22,
             idealCBMImax: 28,
             food: {
-                underweight: { name: "Purina Pro Plan Small Breed", gramsPerDay: 220 },
-                normal: { name: "Royal Canin Dachshund Adult", gramsPerDay: 200 },
-                overweight: { name: "Hill's Science Diet Weight Management", gramsPerDay: 170 }
+                underweight: { name: "Small Breed Puppy Food", gramsPerDay: 220 },
+                normal: { name: "Small Breed Adult Food", gramsPerDay: 200 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 170 }
             }
         },
         "Siberian Husky": {
             idealCBMImin: 25,
             idealCBMImax: 33,
             food: {
-                underweight: { name: "Blue Buffalo Wilderness High Protein", gramsPerDay: 360 },
-                normal: { name: "Taste of the Wild Pacific Stream", gramsPerDay: 320 },
-                overweight: { name: "Nutro Ultra Weight Management", gramsPerDay: 280 }
+                underweight: { name: "High Protein Dog Food", gramsPerDay: 360 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 320 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 280 }
+            }
+        },
+        "Aspin (Asong Pinoy)": {
+            idealCBMImin: 30,
+            idealCBMImax: 40,
+            food: {
+                underweight: { name: "Puppy Food", gramsPerDay: 180 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 150 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 120 }
+            }
+        },
+        "Shih Tzu": {
+            idealCBMImin: 22,
+            idealCBMImax: 28,
+            food: {
+                underweight: { name: "Small Breed Puppy Food", gramsPerDay: 160 },
+                normal: { name: "Small Breed Adult Food", gramsPerDay: 140 },
+                overweight: { name: "Weight Management Small Breed Food", gramsPerDay: 110 }
+            }
+        },
+        "Philippine Kintamani": {
+            idealCBMImin: 45,
+            idealCBMImax: 55,
+            food: {
+                underweight: { name: "High Protein Dog Food", gramsPerDay: 300 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 270 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 230 }
+            }
+        },
+        "Bulldog": {
+            idealCBMImin: 50,
+            idealCBMImax: 60,
+            food: {
+                underweight: { name: "Large Breed Puppy Food", gramsPerDay: 320 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 280 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 240 }
+            }
+        },
+        "Cocker Spaniel": {
+            idealCBMImin: 30,
+            idealCBMImax: 40,
+            food: {
+                underweight: { name: "High Protein Dog Food", gramsPerDay: 220 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 190 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 160 }
+            }
+        },
+        "Poodle": {
+            idealCBMImin: 28,
+            idealCBMImax: 35,
+            food: {
+                underweight: { name: "Small Breed Adult Food", gramsPerDay: 160 },
+                normal: { name: "Small Breed Adult Food", gramsPerDay: 140 },
+                overweight: { name: "Weight Management Small Breed Food", gramsPerDay: 120 }
+            }
+        },
+        "German Shepherd": {
+            idealCBMImin: 70,
+            idealCBMImax: 85,
+            food: {
+                underweight: { name: "High Protein Dog Food", gramsPerDay: 400 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 350 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 300 }
+            }
+        },
+        "Chow Chow": {
+            idealCBMImin: 40,
+            idealCBMImax: 50,
+            food: {
+                underweight: { name: "High Protein Dog Food", gramsPerDay: 250 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 220 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 190 }
+            }
+        },
+        "Boxer": {
+            idealCBMImin: 65,
+            idealCBMImax: 75,
+            food: {
+                underweight: { name: "High Protein Dog Food", gramsPerDay: 360 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 320 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 270 }
+            }
+        },
+        // Additional common breeds in the Philippines
+        "American Bully": {
+            idealCBMImin: 55,
+            idealCBMImax: 70,
+            food: {
+                underweight: { name: "High Protein Dog Food", gramsPerDay: 320 },
+                normal: { name: "Adult Dog Food", gramsPerDay: 280 },
+                overweight: { name: "Weight Management Dog Food", gramsPerDay: 240 }
+            }
+        },
+        "Shih-Poo": {
+            idealCBMImin: 20,
+            idealCBMImax: 28,
+            food: {
+                underweight: { name: "Small Breed Puppy Food", gramsPerDay: 160 },
+                normal: { name: "Small Breed Adult Food", gramsPerDay: 140 },
+                overweight: { name: "Weight Management Small Breed Food", gramsPerDay: 110 }
+            }
+        },
+        "Chihuahua": {
+            idealCBMImin: 15,
+            idealCBMImax: 22,
+            food: {
+                underweight: { name: "Small Breed Puppy Food", gramsPerDay: 120 },
+                normal: { name: "Small Breed Adult Food", gramsPerDay: 100 },
+                overweight: { name: "Weight Management Small Breed Food", gramsPerDay: 80 }
             }
         }
     },
     cat: {
         "Siamese": {
-            min: 14, max: 18,
+            idealCBMImin: 14,
+            idealCBMImax: 18,
             food: {
-                underweight: { name: "Royal Canin Kitten", gramsPerDay: 90 },
-                normal: { name: "Royal Canin Siamese Adult", gramsPerDay: 70 },
-                overweight: { name: "Hill’s Science Diet Perfect Weight Cat", gramsPerDay: 60 }
+                underweight: { name: "Kitten Food", gramsPerDay: 90 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 70 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 60 }
             }
         },
         "Maine Coon": {
-            min: 15, max: 20,
+            idealCBMImin: 15,
+            idealCBMImax: 20,
             food: {
-                underweight: { name: "Purina Pro Plan True Nature", gramsPerDay: 100 },
-                normal: { name: "Royal Canin Maine Coon Adult", gramsPerDay: 95 },
-                overweight: { name: "Hill’s Science Diet Light", gramsPerDay: 80 }
+                underweight: { name: "High Protein Cat Food", gramsPerDay: 100 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 95 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 80 }
             }
         },
         "Bengal": {
-            min: 14, max: 19,
+            idealCBMImin: 14,
+            idealCBMImax: 19,
             food: {
-                underweight: { name: "Blue Buffalo Wilderness High Protein", gramsPerDay: 85 },
-                normal: { name: "Hill's Science Diet Adult Chicken", gramsPerDay: 75 },
-                overweight: { name: "Purina ONE Indoor Advantage", gramsPerDay: 65 }
+                underweight: { name: "High Protein Cat Food", gramsPerDay: 85 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 75 },
+                overweight: { name: "Indoor Cat Food", gramsPerDay: 65 }
             }
         },
         "Norwegian Forest Cat": {
-            min: 16, max: 22,
+            idealCBMImin: 16,
+            idealCBMImax: 22,
             food: {
-                underweight: { name: "Blue Buffalo Wilderness Indoor", gramsPerDay: 100 },
-                normal: { name: "Royal Canin Indoor Long Hair", gramsPerDay: 90 },
-                overweight: { name: "Hill's Science Diet Adult Light", gramsPerDay: 75 }
+                underweight: { name: "Indoor Cat Food", gramsPerDay: 100 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 90 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 75 }
             }
         },
         "Russian Blue": {
-            min: 14, max: 19,
+            idealCBMImin: 14,
+            idealCBMImax: 19,
             food: {
-                underweight: { name: "Nutro Wholesome Essentials", gramsPerDay: 85 },
-                normal: { name: "Hill's Science Diet Adult Chicken", gramsPerDay: 75 },
-                overweight: { name: "Purina ONE Indoor Advantage", gramsPerDay: 65 }
+                underweight: { name: "Balanced Protein Cat Food", gramsPerDay: 85 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 75 },
+                overweight: { name: "Indoor Cat Food", gramsPerDay: 65 }
             }
         },
         "Oriental Shorthair": {
-            min: 13, max: 18,
+            idealCBMImin: 13,
+            idealCBMImax: 18,
             food: {
-                underweight: { name: "Wellness CORE High Protein", gramsPerDay: 80 },
-                normal: { name: "Royal Canin Indoor Adult", gramsPerDay: 70 },
-                overweight: { name: "Iams Indoor Weight & Hairball", gramsPerDay: 60 }
+                underweight: { name: "High Protein Cat Food", gramsPerDay: 80 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 70 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 60 }
+            }
+        },
+        "Domestic Shorthair": {
+            idealCBMImin: 10,
+            idealCBMImax: 16,
+            food: {
+                underweight: { name: "Kitten Food", gramsPerDay: 90 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 70 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 60 }
+            }
+        },
+        "Domestic Longhair": {
+            idealCBMImin: 12,
+            idealCBMImax: 18,
+            food: {
+                underweight: { name: "Kitten Food", gramsPerDay: 95 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 75 },
+                overweight: { name: "Indoor Cat Food", gramsPerDay: 65 }
+            }
+        },
+        "Persian": {
+            idealCBMImin: 12,
+            idealCBMImax: 18,
+            food: {
+                underweight: { name: "Kitten Food", gramsPerDay: 90 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 75 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 60 }
+            }
+        },
+        "Siberian": {
+            idealCBMImin: 15,
+            idealCBMImax: 21,
+            food: {
+                underweight: { name: "High Protein Cat Food", gramsPerDay: 100 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 90 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 75 }
+            }
+        },
+        "Scottish Fold": {
+            idealCBMImin: 12,
+            idealCBMImax: 18,
+            food: {
+                underweight: { name: "Kitten Food", gramsPerDay: 85 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 75 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 60 }
+            }
+        },
+        "Manx": {
+            idealCBMImin: 13,
+            idealCBMImax: 19,
+            food: {
+                underweight: { name: "Kitten Food", gramsPerDay: 85 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 70 },
+                overweight: { name: "Indoor Cat Food", gramsPerDay: 60 }
+            }
+        },
+        // Additional common cat breeds in the Philippines
+        "Japanese Bobtail": {
+            idealCBMImin: 12,
+            idealCBMImax: 18,
+            food: {
+                underweight: { name: "Kitten Food", gramsPerDay: 85 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 75 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 60 }
+            }
+        },
+        "Balinese": {
+            idealCBMImin: 14,
+            idealCBMImax: 19,
+            food: {
+                underweight: { name: "High Protein Cat Food", gramsPerDay: 90 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 75 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 65 }
+            }
+        },
+        "Himalayan": {
+            idealCBMImin: 12,
+            idealCBMImax: 18,
+            food: {
+                underweight: { name: "Kitten Food", gramsPerDay: 90 },
+                normal: { name: "Adult Cat Food", gramsPerDay: 75 },
+                overweight: { name: "Weight Management Cat Food", gramsPerDay: 60 }
             }
         }
     }
 };
+
 
 function toggleHeightField() {
     const petType = document.getElementById("pet").value;

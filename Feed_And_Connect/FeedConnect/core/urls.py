@@ -22,7 +22,7 @@ urlpatterns = [
     path('landing_2', views.landing_2, name='landing page'),
     # path('feed', views.feed, name='feed'),
     path('dashboard/', views.dashboard, name='dashboard'),
-    path('history/', views.feed_history, name= 'feed_history'),
+    path('BMI/', views.feed_history, name= 'BMI'),
 
     path('record-scheduled-feed/', record_scheduled_feed, name='record_scheduled_feed'),
 
