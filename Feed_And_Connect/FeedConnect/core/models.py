@@ -65,6 +65,9 @@ class PaymentProof(models.Model):
     screenshot = models.ImageField(upload_to='payment_screenshots/', blank=True, null=True)
     is_confirmed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    quantity = models.PositiveIntegerField(default=1)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    confirmed_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"Payment from {self.buyer.username} to {self.seller.username} for {self.item_type} #{self.item_id}"
@@ -131,7 +134,7 @@ class ProductRating(models.Model):
 
     class Meta:
         unique_together = ('user', 'product')
-        
+       
 # class SellerReview(models.Model):
 #     reviewer = models.ForeignKey(User, related_name='given_reviews', on_delete=models.CASCADE)
 #     seller = models.ForeignKey(User, related_name='received_reviews', on_delete=models.CASCADE)

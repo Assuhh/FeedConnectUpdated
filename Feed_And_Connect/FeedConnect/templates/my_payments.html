@@ -1,60 +1,72 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>My Orders</h2>
+<div class="container my-5">
+    <h2 class="mb-4">My Orders</h2>
 
-{% for entry in enriched_payments %}
-    {% with payment=entry.payment item=entry.item %}
-        <div style="border:1px solid #ccc; margin-bottom:10px; padding:10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong>
+    {% for entry in enriched_payments %}
+        {% with payment=entry.payment item=entry.item %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                {% if item %}
+                                    {{ item.name }}
+                                {% else %}
+                                    Unknown Item
+                                {% endif %}
+                            </h5>
+                            <small class="text-muted">
+                                {{ payment.item_type|title }} • Ref #: {{ payment.reference_number }}
+                            </small>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#details-{{ forloop.counter }}">
+                            View Details
+                        </button>
+                    </div>
+
+                    <div class="collapse mt-3" id="details-{{ forloop.counter }}">
+                        <hr>
                         {% if item %}
-                            {{ item.name }}
+                            <p><strong>Description:</strong> {{ item.description }}</p>
+                            <p><strong>Price:</strong> ₱{{ item.price }}</p>
+
+                            {% if payment.item_type == 'product' %}
+                                <p><strong>Stock Left:</strong> {{ item.stock }}</p>
+                                {% if item.color %}
+                                    <p><strong>Color:</strong> {{ item.color }}</p>
+                                {% endif %}
+                            {% elif payment.item_type == 'service' %}
+                                <p><strong>Category:</strong> {{ item.category }}</p>
+                                <p><strong>Duration:</strong> {{ item.duration }}</p>
+                            {% endif %}
                         {% else %}
-                            Unknown Item
+                            <p class="text-danger">Item details not available.</p>
                         {% endif %}
-                    </strong> ({{ payment.item_type|title }})
-                    <br>
-                    <small>Reference: {{ payment.reference_number }}</small>
+
+                        <p><strong>Quantity Ordered:</strong> {{ payment.quantity }}</p>
+                        <p><strong>Total Paid:</strong> ₱{{ payment.total_price }}</p>
+
+                        <p>
+                            <strong>Status:</strong>
+                            {% if payment.is_confirmed %}
+                                <span class="badge bg-success">Confirmed</span><br>
+                                <small class="text-muted">Confirmed on {{ payment.confirmed_at|date:"F d, Y H:i" }}</small>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </p>
+                            <p><strong>Order Date:</strong> {{ record.payment.created_at|date:"F j, Y, g:i a" }}</p>
+                    </div>
                 </div>
-                <button onclick="toggleDetails('details-{{ forloop.counter }}')" class="btn btn-sm btn-outline-primary">
-                    View Details
-                </button>
             </div>
-
-            <div id="details-{{ forloop.counter }}" style="display: none; margin-top: 10px;">
-                {% if item %}
-                    {% if payment.item_type == 'product' %}
-                        <p>Description: {{ item.description }}</p>
-                        <p>Price: ₱{{ item.price }}</p>
-                        <p>Quantity: {{ item.stock }}</p>
-                        {% if item.color %}
-                            <p>Color: {{ item.color }}</p>
-                        {% endif %}
-                    {% elif payment.item_type == 'service' %}
-                        <p>Description: {{ item.description }}</p>
-                        <p>Price: ₱{{ item.price }}</p>
-                        <p>Category: {{ item.category }}</p>
-                        <p>Duration: {{ item.duration }}</p>
-                    {% endif %}
-                {% else %}
-                    <p>Item details not available.</p>
-                {% endif %}
-                <p>Status: {{ payment.status }}</p>
-                <p>Date: {{ payment.timestamp|date:"F d, Y H:i" }}</p>
-            </div>
+        {% endwith %}
+    {% empty %}
+        <div class="alert alert-info">
+            You have no orders yet.
         </div>
-    {% endwith %}
-{% empty %}
-    <p>You have no payments yet.</p>
-{% endfor %}
-
-<script>
-    function toggleDetails(id) {
-        const el = document.getElementById(id);
-        el.style.display = el.style.display === 'none' ? 'block' : 'none';
-    }
-</script>
-
+    {% endfor %}
+</div>
 {% endblock %}

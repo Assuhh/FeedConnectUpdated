@@ -66,11 +66,11 @@
                        <b><h1 style="font-size: 1.5rem; color: white;">Feed & Connect</h1></b>
                     </a>
 
-                    <div class="capitalize flex font-semibold hidden lg:block my-2 space-x-3 text-center text-sm">
+                    <!-- <div class="capitalize flex font-semibold hidden lg:block my-2 space-x-3 text-center text-sm">
                         
-                        <a href="/signup" class="blue-button">Register</a>
+                        <a href="{% url 'signup' %}" class="blue-button">Register</a>
 
-                    </div>
+                    </div> -->
 
                 </div>
             </div>
@@ -117,7 +117,7 @@
                 <div class="text-center mt-5 space-x-2">
                     <p style="color: #082567; font-weight: bold;" class="text-base">
                         Not registered?
-                        <a href="/signup" style="color: white; text-decoration: underline; font-weight: 400">Create an account</a>
+                        <a href="{% url 'signup' %}" style="color: white; text-decoration: underline; font-weight: 400">Create an account</a>
                     </p>
                 </div>
             </form>

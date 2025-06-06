@@ -31,12 +31,16 @@
 
 <hr>
 
-<h3>Submit Payment Proof</h3>
+<h2>Confirm Purchase</h2>
 
-<form method="post" enctype="multipart/form-data" action="{% url 'payment' %}">
+<p>You're about to buy <strong>{{ quantity }}</strong> unit(s) of <strong>{{ product.name }}</strong>.</p>
+<p>Price per unit: ₱{{ product.price }}</p>
+<p>Total: <strong>₱{{ total_price }}</strong></p>
+
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" style="padding: 10px 20px; cursor: pointer;">Submit Payment</button>
+    <button type="submit">Submit Payment Proof</button>
 </form>
 
 {% if messages %}

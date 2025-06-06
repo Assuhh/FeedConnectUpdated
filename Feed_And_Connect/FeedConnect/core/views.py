@@ -512,8 +512,8 @@ def payment(request):
             payment_proof.item_type = 'product'
             payment_proof.item_id = product.id
             # (Optional) store quantity/price on the proof if you extend the model
-            # payment_proof.quantity = quantity
-            # payment_proof.total_price = total_price
+            payment_proof.quantity = quantity
+            payment_proof.total_price = total_price
 
             payment_proof.save()
 
@@ -549,12 +549,21 @@ def confirm_payment(request, payment_id):
     if request.user != payment.seller:
         return HttpResponseForbidden("You are not allowed to confirm this payment.")
 
+    # Mark payment as confirmed
     payment.is_confirmed = True
+    payment.confirmed_at = timezone.now()
     payment.save()
-    print(f"Payment {payment_id} confirmed by {request.user}")
 
+    # Reduce product stock
     product = get_object_or_404(Product, id=payment.item_id)
+    if product.stock >= payment.quantity:
+        product.stock -= payment.quantity
+        product.save()
+    else:
+        # Optional: Handle overselling case
+        return HttpResponseForbidden("Not enough stock to confirm this payment.")
 
+    # Get or create conversation
     conversations = (
         Conversation.objects.annotate(num_participants=Count("participants"))
         .filter(participants=payment.buyer)
@@ -567,10 +576,11 @@ def confirm_payment(request, payment_id):
     else:
         conversation = Conversation.objects.create()
         conversation.participants.add(payment.buyer, payment.seller)
-    print(f"Using conversation ID: {conversation.id}")
 
+    # Attach product to conversation
     conversation.products.add(product)
 
+    # Send confirmation message
     Message.objects.create(
         sender=payment.seller,
         receiver=payment.buyer,
@@ -578,8 +588,8 @@ def confirm_payment(request, payment_id):
         conversation=conversation,
         product=product,
     )
-    print("Confirmation message sent.")
 
+    # Redirect back to inbox so seller sees latest message
     return redirect('inbox')
 
 @login_required(login_url='signin')
@@ -599,6 +609,10 @@ def my_payments(request):
             item = Product.objects.filter(id=payment.item_id).first()
         elif payment.item_type == 'service':
             item = Service.objects.filter(id=payment.item_id).first()
+
+        # Fix zero total price for old data
+        if payment.total_price == 0 and item:
+            payment.total_price = item.price * payment.quantity
 
         enriched_payments.append({
             'payment': payment,
