@@ -490,6 +490,7 @@ def seller_profile(request, seller_id=None):
         'reviews': reviews,
         'is_own_profile': False,
     })
+    
 @login_required(login_url='signin')   
 def payment_success(request):
     return render(request, 'payment_success.html')

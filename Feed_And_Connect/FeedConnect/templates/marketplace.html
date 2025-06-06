@@ -25,12 +25,26 @@
 .product-name {
   font-weight: 600;
   margin-bottom: 0.25rem;
+  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+  line-height: 1.2;
+  max-height: 2.6em; /* roughly two lines */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
+
 .product-price,
 .product-stock,
 .seller-location {
   margin: 0.25rem 0;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
+
 .seller-link {
   font-size: 0.85rem;
   color: #007bff;

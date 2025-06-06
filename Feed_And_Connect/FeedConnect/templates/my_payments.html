@@ -58,7 +58,7 @@
                                 <span class="badge bg-warning text-dark">Pending</span>
                             {% endif %}
                         </p>
-                            <p><strong>Order Date:</strong> {{ record.payment.created_at|date:"F j, Y, g:i a" }}</p>
+                            {% comment %} <p><strong>Order Date:</strong> {{ record.payment.created_at|date:"F j, Y, g:i a" }}</p> {% endcomment %}
                     </div>
                 </div>
             </div>

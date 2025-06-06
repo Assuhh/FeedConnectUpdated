@@ -1,73 +1,173 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Payment Instructions</h2>
 
-<p>You are purchasing: <strong>{{ product.name }}</strong></p>
+<style>
+/* Modal styling */
+/* Modal container */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 9999;
+  padding-top: 60px;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.8);
+}
 
-{% if seller_profile %}
-  <div style="background-color: #fff; color: #000; border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <h3 style="margin-bottom: 15px; color: #000;">Pay to Seller via GCash</h3>
+/* Modal image */
+.modal-content {
+  display: block;
+  max-width: 90vw;    /* max width relative to viewport width */
+  max-height: 90vh;   /* max height relative to viewport height */
+  width: auto;        /* let browser calculate width */
+  height: auto;       /* let browser calculate height */
+  margin: auto;
+  border-radius: 10px;
+  box-shadow: 0 0 20px #000;
+  object-fit: contain; /* important for maintaining aspect ratio */
+}
 
-    {% if seller_profile.gcash_qr %}
-      <img src="{{ seller_profile.gcash_qr.url }}" width="200" alt="GCash QR Code" style="display: block; margin-bottom: 15px; border-radius: 6px;">
-    {% else %}
-      <p><em>No QR uploaded.</em></p>
-    {% endif %}
 
-    {% if seller_profile.gcash_number %}
-      <p><strong>GCash Number:</strong> {{ seller_profile.gcash_number }}</p>
-    {% endif %}
 
-    {% if seller_profile.gcash_fullname %}
-      <p><strong>GCash Fullname:</strong> {{ seller_profile.gcash_fullname }}</p>
-    {% else %}
-      <p><em>No full name saved.</em></p>
-    {% endif %}
+.close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: #fff;
+  font-size: 35px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #ccc;
+}
+
+.payment-container {
+  max-width: 900px;
+  margin: 40px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  color: #000;
+}
+</style>
+
+<div class="payment-container">
+  <h2>💸 Payment Instructions</h2>
+  <p>You are purchasing:</p>
+
+  {% if seller_profile %}
+    <div style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff;">
+      <h3>Pay to Seller via GCash</h3>
+
+      {% if seller_profile.gcash_qr %}
+        <img id="qrImage" src="{{ seller_profile.gcash_qr.url }}" width="200" alt="GCash QR Code" style="display: block; margin-bottom: 15px; border-radius: 6px; cursor: pointer;">
+
+        <!-- Modal -->
+        <div id="qrModal" class="modal">
+          <span class="close">&times;</span>
+          <img class="modal-content" id="modalImg" alt="GCash QR Code Full View">
+        </div>
+      {% else %}
+        <p><em>No QR uploaded.</em></p>
+      {% endif %}
+
+      {% if seller_profile.gcash_number %}
+        <p><strong>GCash Number:</strong> {{ seller_profile.gcash_number }}</p>
+      {% endif %}
+
+      {% if seller_profile.gcash_fullname %}
+        <p><strong>GCash Fullname:</strong> {{ seller_profile.gcash_fullname }}</p>
+      {% else %}
+        <p><em>No full name saved.</em></p>
+      {% endif %}
+    </div>
+  {% else %}
+    <p><em>No seller profile found.</em></p>
+  {% endif %}
+
+  <hr>
+
+  <div style="background-color: #fff; border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h2>Confirm Purchase</h2>
+    <p>You're about to buy <strong>{{ quantity }}</strong> unit(s) of <strong>{{ product.name }}</strong>.</p>
+    <p>Price per unit: ₱{{ product.price }}</p>
+    <p>Total: <strong>₱{{ total_price }}</strong></p>
   </div>
-{% else %}
-  <p><em>No seller profile found.</em></p>
-{% endif %}
 
-<hr>
-
-<div style="background-color: #fff; color: #000; border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-  <h2 style="margin-top: 0; color: #000;">Confirm Purchase</h2>
-
-  <p>You're about to buy <strong>{{ quantity }}</strong> unit(s) of <strong>{{ product.name }}</strong>.</p>
-  <p>Price per unit: ₱{{ product.price }}</p>
-  <p>Total: <strong>₱{{ total_price }}</strong></p>
-</div>
-
-
-<form method="POST" enctype="multipart/form-data">
+  <form method="POST" enctype="multipart/form-data" id="payment-form">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Submit Payment Proof</button>
-</form>
+    <button type="submit" id="submit-btn" disabled>Submit Payment Proof</button>
+  </form>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const refInput = document.querySelector('input[name="reference_number"]');
-    if (refInput) {
-      refInput.addEventListener('input', function (e) {
-        // Remove all non-digit characters as user types
-        this.value = this.value.replace(/\D/g, '');
-        // Limit length to 12 digits
-        if (this.value.length > 12) {
-          this.value = this.value.slice(0, 12);
-        }
-      });
-    }
-  });
+document.addEventListener('DOMContentLoaded', function () {
+  // QR modal behavior
+  const modal = document.getElementById("qrModal");
+  const img = document.getElementById("qrImage");
+  const modalImg = document.getElementById("modalImg");
+  const closeBtn = document.getElementsByClassName("close")[0];
+
+  if (img) {
+    img.onclick = function () {
+      modal.style.display = "flex";
+      modalImg.src = this.src;
+      modalImg.alt = this.alt;
+    };
+  }
+
+  if (closeBtn) {
+    closeBtn.onclick = function () {
+      modal.style.display = "none";
+    };
+  }
+
+  if (modal) {
+    modal.onclick = function (e) {
+      if (e.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+  }
+
+  // Enable submit only if fields are filled
+  const refInput = document.querySelector('input[name="reference_number"]');
+  const fileInput = document.querySelector('input[type="file"][name="screenshot"]');
+  const submitBtn = document.getElementById('submit-btn');
+
+  function validateInputs() {
+    const refValid = refInput && refInput.value.trim() !== '';
+    const fileValid = fileInput && fileInput.files.length > 0;
+    submitBtn.disabled = !(refValid && fileValid);
+  }
+
+  if (refInput) {
+    refInput.addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 12);
+      validateInputs();
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', validateInputs);
+  }
+
+  validateInputs();
+});
 </script>
-
-
-{% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
 
 {% endblock %}

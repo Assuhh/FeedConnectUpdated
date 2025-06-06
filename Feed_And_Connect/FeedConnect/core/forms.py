@@ -34,13 +34,21 @@ class MessageForm(forms.ModelForm):
 class SellerProfileForm(forms.ModelForm):
     class Meta:
         model = SellerProfile
-        fields = ['display_name','gcash_fullname','gcash_number', 'gcash_qr', 'location']
+        fields = ['display_name', 'gcash_fullname', 'gcash_number', 'gcash_qr', 'location']
 
     def clean_gcash_number(self):
         number = self.cleaned_data.get('gcash_number')
-        if number and not number.isdigit():
+        if number and not str(number).isdigit():
             raise forms.ValidationError("GCash number must contain digits only.")
         return number
+
+    def clean(self):
+        cleaned_data = super().clean()
+        gcash_qr = cleaned_data.get('gcash_qr')
+
+        if not gcash_qr:
+            self.add_error('gcash_qr', 'You must upload a GCash QR code before saving.')
+
     
 class PaymentProofForm(forms.ModelForm):
     reference_number = forms.CharField(
