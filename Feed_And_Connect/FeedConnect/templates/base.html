@@ -99,6 +99,18 @@
             color: gold;
         }
 
+        .custom-back-btn {
+            border-color: white;
+            color: white;
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .custom-back-btn:hover {
+            background-color: white;       /* Hover background white */
+            color: #6c757d;                /* Hover text gray */
+            border-color: #6c757d;         /* Hover border gray */
+        }
 
 
     </style>
@@ -113,15 +125,20 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: rgba(128, 128, 128, 0.6);">
 
     <div class="container">
-        <button type="button" class="btn btn-outline-secondary me-2" onclick="window.history.back();">← Back</button>
-        <a class="navbar-brand" href="{% url 'dashboard_1' %}">Feed-Commerce</a>
+<button type="button" 
+        class="btn btn-outline-secondary me-2 custom-back-btn" 
+        onclick="window.history.back();">
+  ← Back
+</button>
+
+        <a class="navbar-brand" href="{% url 'marketplace' %}">Feed-Commerce</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="{% url 'marketplace' %}" style="color: #fff;">Feed-Commerce</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'marketplace' %}" style="color: #fff;">Marketplace</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'post_item' %}" style="color: #fff;">Post Item</a></li>
                 {% if user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'my_listings' %}" style="color: #fff;">Listings</a></li>

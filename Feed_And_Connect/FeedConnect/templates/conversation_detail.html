@@ -119,7 +119,7 @@
 
         <!-- Inquired Products or Services -->
         <div>
-            <h5 style="margin-top: 1rem; color: #fff; font-weight: bold;">Inquired Product(s) or Service(s)</h5>
+            <h5 style="margin-top: 1rem; color: #fff; font-weight: bold;">Inquired Product(s)</h5>
             {% for product in conversation.products.all %}
                 <div class="product-box">
                     <strong style="color: #000;">Product:</strong>  <!-- Navy blue -->
@@ -150,9 +150,10 @@
     <div class="messages">
         <h3 style="color: #fff; font-weight: bold;">Conversation</h3>
         {% for message in messages %}
-            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}" 
-                style="{% if not message.is_read and message.receiver == request.user %}background-color: #e6f7ff; font-weight: bold;{% endif %}"
-            >
+            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}"
+     {% if not message.is_read and message.receiver == request.user %}
+         style="background-color: #e6f7ff; font-weight: bold;"
+     {% endif %}>
                 <strong>{{ message.sender.username }}</strong><br>
                 {{ message.content }}<br>
                 <small>{{ message.timestamp|localtime|date:"M d, Y h:i A" }}</small>

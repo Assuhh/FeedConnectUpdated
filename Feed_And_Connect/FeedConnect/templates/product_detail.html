@@ -3,14 +3,24 @@
 {% block title %}{{ product.name }} - Product Detail{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-  <div class="card shadow-lg rounded-lg">
+<div class="container my-5 d-flex justify-content-center">
+  <div class="card shadow-lg rounded-lg" style="max-width: 800px; width: 100%;">
     <div class="card-body p-4">
-    <button type="button" class="btn btn-outline-secondary me-2" onclick="window.history.back();">← Back</button>
-      <h1 class="card-title mb-4">{{ product.name }}</h1>
+      <div class="d-flex align-items-center gap-2 mb-3">
+    {% comment %} <button type="button"
+          class="btn btn-secondary px-3 py-2"
+          style="--bs-btn-hover-bg: #fff; --bs-btn-hover-color: #6c757d;"
+          onclick="window.history.back();">←</button> {% endcomment %}
+
+
+</div>
+<h1 class="card-title mb-4" style="font-size: 1.5rem;">{{ product.name }}</h1>
+
 
       {% if product.image %}
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded mb-4">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}"
+             class="img-fluid rounded mb-4"
+             style="max-height: 300px; object-fit: cover; width: 100%;">
       {% endif %}
 
       <p><strong>Price:</strong> <span class="text-success fw-bold">₱{{ product.price }}</span></p>
@@ -24,7 +34,7 @@
       <p><strong>Description:</strong> {{ product.description }}</p>
 
       <div class="mt-4 d-flex gap-2 flex-wrap">
-        <a href="{% url 'marketplace' %}" class="btn btn-outline-secondary">← Return to Marketplace</a>
+        {% comment %} <a href="{% url 'marketplace' %}" class="btn btn-outline-secondary">← Return to Marketplace</a> {% endcomment %}
 
         {% if request.user != product.seller %}
           <a href="{% url 'send_message' receiver_id=product.seller.id item_type='product' item_id=product.id %}" class="btn btn-primary">
@@ -49,77 +59,77 @@
       </div>
     </div>
   </div>
-
-  {% if not buy_now_mode %}
-    <!-- Rating -->
-    <div class="card mt-5 shadow-sm" id="ratingSection">
-      <div class="card-body">
-        <h3 class="card-title">Average Rating</h3>
-{% if average_rating %}
-  {% with full_stars=average_rating|floatformat:"0" %}
-  {% with decimal=average_rating|floatformat:"1"|slice:"-1" %}
-    <p>
-      {% for i in "12345"|make_list %}
-        {% if forloop.counter <= full_stars|add:"0" %}
-          <span style="color: #FFD700; font-size: 1.5rem;">&#9733;</span>  {# full star #}
-        {% elif forloop.counter == full_stars|add:"1" and decimal|add:"0" >= 5 %}
-          <span style="color: #FFD700; font-size: 1.5rem;">&#189;</span>  {# half star #}
-        {% else %}
-          <span style="color: #ccc; font-size: 1.5rem;">&#9733;</span>  {# empty star #}
-        {% endif %}
-      {% endfor %}
-      ({{ reviews.count }} review{{ reviews.count|pluralize }})
-    </p>
-  {% endwith %}
-  {% endwith %}
-{% else %}
-  <p>No ratings yet.</p>
-{% endif %}
-      </div>
-    </div>
-
-    <!-- Reviews -->
-    <div class="card mt-4 shadow-sm" id="reviewsSection">
-      <div class="card-body">
-        <h3 class="card-title">Reviews</h3>
-        {% if reviews %}
-          <ul class="list-unstyled">
-            {% for review in reviews %}
-              <li class="mb-3 border-bottom pb-3">
-                <strong>{{ review.user.username }}</strong> –
-                {% for i in "12345"|make_list %}
-                  {% if forloop.counter <= review.rating %}
-                    <span style="color: #FFD700;">&#9733;</span>
-                  {% else %}
-                    <span style="color: #ccc;">&#9733;</span>
-                  {% endif %}
-                {% endfor %}
-                <p>{{ review.comment }}</p>
-                <small class="text-muted">{{ review.created_at|date:"M d, Y H:i" }}</small>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p>No reviews yet. Be the first to review!</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Review Form -->
-    {% if user.is_authenticated %}
-      <div class="card mt-4 shadow-sm" id="reviewFormSection">
-        <div class="card-body">
-          <h3 class="card-title">Leave a Review</h3>
-          <form method="post">
-            {% csrf_token %}
-            {{ review_form.as_p }}
-            <button type="submit" name="submit_review" class="btn btn-primary">Submit Review</button>
-          </form>
-        </div>
-      </div>
-    {% else %}
-      <p class="mt-3"><a href="{% url 'signin' %}">Sign in</a> to leave a review.</p>
-    {% endif %}
-  {% endif %}
 </div>
+
+{% if not buy_now_mode %}
+  <!-- Rating -->
+  <div class="card mt-5 shadow-sm mx-auto" style="max-width: 800px;">
+    <div class="card-body">
+      <h3 class="card-title">Average Rating</h3>
+      {% if average_rating %}
+        {% with full_stars=average_rating|floatformat:"0" %}
+        {% with decimal=average_rating|floatformat:"1"|slice:"-1" %}
+          <p>
+            {% for i in "12345"|make_list %}
+              {% if forloop.counter <= full_stars|add:"0" %}
+                <span style="color: #FFD700; font-size: 1.5rem;">&#9733;</span>
+              {% elif forloop.counter == full_stars|add:"1" and decimal|add:"0" >= 5 %}
+                <span style="color: #FFD700; font-size: 1.5rem;">&#189;</span>
+              {% else %}
+                <span style="color: #ccc; font-size: 1.5rem;">&#9733;</span>
+              {% endif %}
+            {% endfor %}
+            ({{ reviews.count }} review{{ reviews.count|pluralize }})
+          </p>
+        {% endwith %}
+        {% endwith %}
+      {% else %}
+        <p>No ratings yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Reviews -->
+  <div class="card mt-4 shadow-sm mx-auto" style="max-width: 800px;">
+    <div class="card-body">
+      <h3 class="card-title">Reviews</h3>
+      {% if reviews %}
+        <ul class="list-unstyled">
+          {% for review in reviews %}
+            <li class="mb-3 border-bottom pb-3">
+              <strong>{{ review.user.username }}</strong> –
+              {% for i in "12345"|make_list %}
+                {% if forloop.counter <= review.rating %}
+                  <span style="color: #FFD700;">&#9733;</span>
+                {% else %}
+                  <span style="color: #ccc;">&#9733;</span>
+                {% endif %}
+              {% endfor %}
+              <p>{{ review.comment }}</p>
+              <small class="text-muted">{{ review.created_at|date:"M d, Y H:i" }}</small>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No reviews yet. Be the first to review!</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Review Form -->
+  {% if user.is_authenticated %}
+    <div class="card mt-4 shadow-sm mx-auto" style="max-width: 800px;">
+      <div class="card-body">
+        <h3 class="card-title">Leave a Review</h3>
+        <form method="post">
+          {% csrf_token %}
+          {{ review_form.as_p }}
+          <button type="submit" name="submit_review" class="btn btn-primary">Submit Review</button>
+        </form>
+      </div>
+    </div>
+  {% else %}
+    <p class="mt-3 text-center"><a href="{% url 'signin' %}">Sign in</a> to leave a review.</p>
+  {% endif %}
+{% endif %}
 {% endblock %}
