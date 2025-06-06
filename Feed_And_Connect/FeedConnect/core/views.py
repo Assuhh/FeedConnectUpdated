@@ -638,7 +638,12 @@ def confirm_payment(request, payment_id):
 def payment_confirmations(request):
     # Show only unconfirmed payments where the current user is the seller
     pending = PaymentProof.objects.filter(seller=request.user, is_confirmed=False)
-    return render(request, 'payment_confirmations.html', {'payments': pending})
+    pending_count = pending.count()
+    return render(request, 'payment_confirmations.html', {
+        'payments': pending,
+        'pending_count': pending_count
+    })
+
 
 @login_required(login_url='signin')
 def my_payments(request):

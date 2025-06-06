@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 import uuid
 from datetime import datetime
+
 from django.utils.timezone import now
 
 User = get_user_model()
@@ -146,6 +147,8 @@ class ProductRating(models.Model):
 
     class Meta:
         unique_together = ('user', 'product')
+
+
        
 # class SellerReview(models.Model):
 #     reviewer = models.ForeignKey(User, related_name='given_reviews', on_delete=models.CASCADE)

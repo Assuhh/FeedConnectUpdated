@@ -69,6 +69,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.unread_message_count',
+                'core.context_processors.payment_confirmation_count',
+
             ],
         },
     },
