@@ -47,16 +47,16 @@
             width: 100%;
         }
         .feed-button {
-            width: 100%;
-            background-color: #6c757d;
-            border: none;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
+    width: 100%;
+    background-color: #6c757d;
+    border: none;
+    padding: 20px; /* increased from 15px */
+    font-size: 22px; /* increased from 18px */
+    font-weight: bold;
+    color: white;
+    border-radius: 12px; /* slightly rounder */
+    transition: all 0.3s ease;
+}
         .feed-button:hover {
             background-color: #8f969d;
             transform: translateY(-2px);
@@ -402,9 +402,15 @@
     }
 
     function updatePortionLabel() {
-        var portion = document.getElementById('portion').value;
-        document.getElementById('portionValueLabel').textContent = 'Selected: ' + portion + 'g';
+        const portionSlider = document.getElementById("portion");
+        const label = document.getElementById("portionValueLabel");
+        label.innerHTML = `Selected: ${portionSlider.value}g`;
     }
+
+    // Update label on page load (in case last_portion is null or missing)
+    window.addEventListener('DOMContentLoaded', () => {
+        updatePortionLabel();
+    });
 
     function updateScheduleStatus() {
         var toggle = document.getElementById('schedule_toggle');

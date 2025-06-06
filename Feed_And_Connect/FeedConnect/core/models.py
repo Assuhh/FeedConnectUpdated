@@ -126,6 +126,18 @@ class Product(models.Model):
     # @property
     # def has_colors(self):
     #     return bool(self.color_options)
+class ProductReview(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField()  # 1 to 5
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        #unique_together = ('product', 'user')  # one review per product per user
+        pass
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name} ({self.rating}★)"
 
 class ProductRating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -175,6 +187,7 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     conversation = models.ForeignKey('Conversation', related_name='messages', on_delete=models.CASCADE, default=1)
     is_read = models.BooleanField(default=False)
+    read = models.BooleanField(default=False)
     
     # Optional references
     product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.SET_NULL)

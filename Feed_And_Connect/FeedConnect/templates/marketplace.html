@@ -1,50 +1,36 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}Marketplace - Pet Feeder{% endblock %}
 
 {% block content %}
 
 <style>
-.product-box {
-  min-height: 440px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+.product-card {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: #fff;
+  color: #000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-
+.product-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transform: scale(1.01);
+  transition: all 0.2s ease-in-out;
+}
 .product-image {
   border-radius: 5px;
   object-fit: cover;
 }
-
 .product-name {
   font-weight: 600;
   margin-bottom: 0.25rem;
 }
-
-.product-desc {
-  font-size: 0.9rem;
-  color: #666;
-  flex-grow: 1;
-}
-
-.product-price {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-}
-
-.product-stock {
-  font-size: 0.9rem;
-  color: #444;
-  margin-bottom: 0.5rem;
-}
-
+.product-price,
+.product-stock,
 .seller-location {
-  font-size: 0.85rem;
-  color: #555;
-  margin-bottom: 0.5rem;
+  margin: 0.25rem 0;
 }
-
 .seller-link {
   font-size: 0.85rem;
   color: #007bff;
@@ -53,163 +39,138 @@
 .seller-link:hover {
   text-decoration: none;
 }
-
 .btn-outline-white {
-    color: #ffffff;
-    border: 1px solid #ffffff;
-    background-color: transparent;
+  color: #000;
+  border: 1px solid #000;
+  background-color: transparent;
 }
-
 .btn-outline-white:hover {
-    background-color: #ffffff;
-    color: #000000; /* optional: black text on white background when hovered */
+  background-color: #000;
+  color: #fff;
 }
-
-
+.star-filled {
+  color: #FFD700;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.star-empty {
+  color: #ccc;
+  font-size: 1.2rem;
+  line-height: 1;
+}
 </style>
 
 <h1 style="text-align: center; margin-bottom: 1.5rem; font-size: 2rem; color: #fff; font-weight: bold;">Marketplace</h1>
 
 <!-- Post New Product/Service Button -->
 <div style="text-align: center; margin: 1.5rem 0;">
-    <a href="{% url 'post_item' %}" 
-       style="background-color: gray; color: white; font-size: 1.25rem; padding: 1rem 3rem; border-radius: 0.5rem; text-decoration: none; display: inline-block; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);">
-        <i class="bi bi-plus-circle" style="margin-right: 0.5rem;"></i>Post New Product
-    </a>
+  <a href="{% url 'post_item' %}" 
+     style="background-color: gray; color: white; font-size: 1.25rem; padding: 1rem 3rem; border-radius: 0.5rem; text-decoration: none; display: inline-block;">
+    <i class="bi bi-plus-circle" style="margin-right: 0.5rem;"></i>Post New Product
+  </a>
 </div>
 
 <!-- Search and Filter Form -->
 <form method="get" action="{% url 'marketplace' %}" style="margin-bottom: 1.5rem;">
-    <input type="text" name="q" value="{{ query }}" placeholder="Search for products or services..." 
-        style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 0.25rem; margin-bottom: 0.5rem;">
-    <select id="categoryDropdown" name="category" onchange="this.form.submit()" style="width: 100%; padding: 0.5rem; font-size: 1rem; border-radius: 0.25rem;">
-        <option value="">All Categories</option>
-        {% for category in categories %}
-            {% if category != 'Others' %}
-                <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>
-                    {{ category|title }}
-                </option>
-            {% endif %}
-        {% endfor %}
-        {% if 'Others' in categories %}
-            <option value="Others" {% if selected_category == 'Others' %}selected{% endif %}>Others</option>
-        {% endif %}
-    </select>
+  <input type="text" name="q" value="{{ query }}" placeholder="Search for products or services..." 
+         style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 0.25rem; margin-bottom: 0.5rem;">
+  <select name="category" onchange="this.form.submit()" style="width: 100%; padding: 0.5rem; font-size: 1rem; border-radius: 0.25rem;">
+    <option value="">All Categories</option>
+    {% for category, display in categories.items %}
+      {% if category != 'Others' %}
+        <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>
+          {{ display|title }}
+        </option>
+      {% endif %}
+    {% endfor %}
+    {% if 'Others' in categories %}
+      <option value="Others" {% if selected_category == 'Others' %}selected{% endif %}>Others</option>
+    {% endif %}
+  </select>
 </form>
 
-<!-- Products -->
+<!-- Products Section -->
 <h3 style="font-size: 1.5rem; margin-top: 2rem; color: #fff; font-weight: bold;">Products</h3>
 <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
   {% for product in products %}
-  <div class="product" data-product-id="{{ product.id }}" style="flex: 0 0 calc(33.333% - 1rem); max-width: calc(33.333% - 1rem); box-sizing: border-box; position: relative;">
-    <div class="product-card" style="border-radius: 0.5rem; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-      
-      {% if product.stock == 0 %}
-        <span style="position: absolute; top: 10px; right: 10px; background-color: red; color: white; padding: 0.25rem 0.75rem; border-radius: 999px;">SOLD</span>
-      {% else %}
-        <span style="position: absolute; top: 10px; right: 10px; background-color: green; color: white; padding: 0.25rem 0.75rem; border-radius: 999px;">SELLING</span>
-      {% endif %}
+    <div style="flex: 0 0 calc(33.333% - 1rem); max-width: calc(33.333% - 1rem); position: relative;">
+      <div class="product-card">
 
-      {% if product.image %}
-        <img src="{{ product.image.url }}" alt="{{ product.name }}"
-             onclick="openImageModal('{{ product.image.url }}')"
-             style="cursor: pointer; width: 100%; height: 200px; object-fit: cover; display: block;">
-      {% endif %}
-
-      <div style="padding: 1rem;">
-        <h5 style="margin-top: 0; font-size: 1.25rem; color: #fff; font-weight: bold;">{{ product.name }}</h5>
-        <p style="color: #fff; margin: 0.25rem 0;">Product</p>
-        
-        {% if product.seller_profile and product.seller_profile.location %}
-        <p><strong>Location:</strong> {{ product.seller_profile.location }}</p>
+        {% if product.stock == 0 %}
+          <span style="position: absolute; top: 10px; right: 10px; background-color: red; color: white; padding: 0.25rem 0.75rem; border-radius: 999px;">SOLD</span>
         {% else %}
-        <p><strong>Location:</strong> Not provided</p>
+          <span style="position: absolute; top: 10px; right: 10px; background-color: green; color: white; padding: 0.25rem 0.75rem; border-radius: 999px;">SELLING</span>
         {% endif %}
 
+        {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+               onclick="openImageModal('{{ product.image.url }}', '{{ product.name }}')"
+               class="product-image" style="width: 100%; height: 220px; cursor: pointer;">
+        {% endif %}
 
+        <div style="padding: 1rem; display: flex; flex-direction: column; height: 280px;">
+          <h4 class="product-name">{{ product.name }}</h4>
+          <p class="product-price"><strong>₱{{ product.price }}</strong></p>
+          <p class="product-stock">Stock: {{ product.stock }}</p>
+          {% if product.seller_profile and product.seller_profile.location %}
+            <p class="seller-location"><strong>Location:</strong> {{ product.seller_profile.location }}</p>
+          {% else %}
+            <p class="seller-location"><strong>Location:</strong> N/A</p>
+          {% endif %}
 
-        <p style="color: #fff; margin: 0.25rem 0;"><strong>Price:</strong> ₱{{ product.price }}</p>
-        <p style="color: #fff; margin: 0.25rem 0;"><strong>Stock:</strong> {{ product.stock }}</p>
-
-        <!-- ⭐ Star Rating -->
-        <form method="POST" action="{% url 'rate_product' product.id %}">
-          {% csrf_token %}
-          <div class="star-rating">
-            {% for i in "54321"|make_list %}
-              <input type="radio" id="star{{ product.id }}-{{ i }}" name="rating-{{ product.id }}" value="{{ i }}" />
-              <label for="star{{ product.id }}-{{ i }}">&#9733;</label>
-            {% endfor %}
+          <div class="rating" style="margin-top: auto;">
+            {% if product.avg_rating %}
+              {% for i in stars %}
+                {% if i <= product.avg_rating_int %}
+                  <span class="star-filled">&#9733;</span>
+                {% else %}
+                  <span class="star-empty">&#9733;</span>
+                {% endif %}
+              {% endfor %}
+              <small>({{ product.reviews.count }} review{{ product.reviews.count|pluralize }})</small>
+            {% else %}
+              <p>No ratings yet</p>
+            {% endif %}
           </div>
-          {% comment %} <button type="submit">Rate</button> {% endcomment %}
-        </form>
-        <p class="rating-value" style="color: #fff; margin-top: 0.5rem;">You rated: 0 stars</p>
 
-        {% if request.user == product.seller %}
-          <a href="{% url 'edit_product' product.id %}" class="btn w-100 mt-2" style="background-color: #adb5bd; color: black;">Edit</a>
-        {% else %}
-        <div class="d-flex justify-content-between mb-2">
-          <a href="{% url 'product_detail' product.id %}" class="btn btn-sm flex-grow-1 me-2 btn-outline-white">View Detail</a>
-          <a href="{% url 'send_message' receiver_id=product.seller.id item_type='product' item_id=product.id %}" class="btn btn-primary btn-sm flex-grow-1">Chat Seller</a>
+          <div style="margin-top: 0.75rem;">
+            {% if request.user == product.seller %}
+              <a href="{% url 'edit_product' product.id %}" class="btn btn-warning btn-sm w-100">Edit</a>
+            {% else %}
+              <div class="d-flex gap-2">
+                <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-white btn-sm flex-fill">View Detail</a>
+                <a href="{% url 'send_message' receiver_id=product.seller.id item_type='product' item_id=product.id %}" 
+                   class="btn btn-primary btn-sm flex-fill">Chat Seller</a>
+              </div>
+              <a href="{% url 'product_detail' product.id %}?buy_now=1" class="btn btn-success btn-sm w-100 mt-2">Buy Now</a>
+            {% endif %}
+          </div>
         </div>
-        <a href="{% url 'product_detail' product.id %}?buy_now=1" class="btn btn-success w-100 btn-sm">Buy Now</a>
-
-      {% endif %}
       </div>
     </div>
-  </div>
   {% empty %}
     <p style="color: white;">No products found.</p>
   {% endfor %}
 </div>
 
-
-<!-- Image Modal -->
-<div id="imageModal" onclick="closeImageModal()" 
-     style="display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center;">
-    <img id="modalImage" src="" style="max-width: 90%; max-height: 90%; border: 4px solid #fff; border-radius: 8px;">
+<!-- Image Modal (JS) -->
+<div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:9999;">
+  <img id="modalImage" src="" style="max-width:90vw; max-height:90vh; border-radius:8px;">
+  <button onclick="closeImageModal()" 
+          style="position:absolute; top:20px; right:20px; font-size:2rem; background:none; border:none; color:white; cursor:pointer;">&times;</button>
 </div>
 
 <script>
-function openImageModal(url) {
-    var modal = document.getElementById('imageModal');
-    var modalImg = document.getElementById('modalImage');
-    modalImg.src = url;
-    modal.style.display = 'flex';
+function openImageModal(url, altText) {
+  const modal = document.getElementById('imageModal');
+  const img = document.getElementById('modalImage');
+  img.src = url;
+  img.alt = altText;
+  modal.style.display = 'flex';
 }
-
 function closeImageModal() {
-    document.getElementById('imageModal').style.display = 'none';
+  document.getElementById('imageModal').style.display = 'none';
 }
-</script>
-
-<script>
-  // Star rating interaction for all products
-  document.querySelectorAll('.product').forEach(product => {
-    const productId = product.getAttribute('data-product-id');
-    const starRating = product.querySelector('.star-rating');
-    const ratingValue = product.querySelector('.rating-value');
-    const stars = starRating.querySelectorAll('input[type="radio"]');
-
-    // Restore saved rating for this product from localStorage
-    const savedRating = localStorage.getItem(`star-rating-${productId}`);
-    if (savedRating) {
-      const starToCheck = starRating.querySelector(`input[value="${savedRating}"]`);
-      if (starToCheck) {
-        starToCheck.checked = true;
-        ratingValue.textContent = `You rated: ${savedRating} star${savedRating > 1 ? 's' : ''}`;
-      }
-    }
-
-    // Listen for changes, update localStorage and UI
-    stars.forEach(radio => {
-      radio.addEventListener('change', e => {
-        const value = e.target.value;
-        localStorage.setItem(`star-rating-${productId}`, value);
-        ratingValue.textContent = `You rated: ${value} star${value > 1 ? 's' : ''}`;
-      });
-    });
-  });
 </script>
 
 {% endblock %}

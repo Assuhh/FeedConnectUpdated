@@ -124,7 +124,8 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'post_item' %}" style="color: #fff;">Post Item</a></li>
                 {% if user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'my_listings' %}" style="color: #fff;">Listings</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'seller_profile' %}" style="color: #fff;">Seller Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'seller_profile' user.id %}" style="color: #fff;">Seller Profile</a></li>
+
                 <li class="nav-item"><a class="nav-link" href="{% url 'my_payments' %}" style="color: #fff;">Orders</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'payment_confirmations' %}" style="color: #fff;">Confirmations</a></li>
                  {% endif %}

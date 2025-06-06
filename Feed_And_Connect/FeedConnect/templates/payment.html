@@ -6,11 +6,11 @@
 <p>You are purchasing: <strong>{{ product.name }}</strong></p>
 
 {% if seller_profile %}
-  <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
-    <h3>Pay to Seller via GCash</h3>
+  <div style="background-color: #fff; color: #000; border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h3 style="margin-bottom: 15px; color: #000;">Pay to Seller via GCash</h3>
 
     {% if seller_profile.gcash_qr %}
-      <img src="{{ seller_profile.gcash_qr.url }}" width="200" alt="GCash QR Code" style="display: block; margin-bottom: 10px;">
+      <img src="{{ seller_profile.gcash_qr.url }}" width="200" alt="GCash QR Code" style="display: block; margin-bottom: 15px; border-radius: 6px;">
     {% else %}
       <p><em>No QR uploaded.</em></p>
     {% endif %}
@@ -31,17 +31,36 @@
 
 <hr>
 
-<h2>Confirm Purchase</h2>
+<div style="background-color: #fff; color: #000; border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+  <h2 style="margin-top: 0; color: #000;">Confirm Purchase</h2>
 
-<p>You're about to buy <strong>{{ quantity }}</strong> unit(s) of <strong>{{ product.name }}</strong>.</p>
-<p>Price per unit: ₱{{ product.price }}</p>
-<p>Total: <strong>₱{{ total_price }}</strong></p>
+  <p>You're about to buy <strong>{{ quantity }}</strong> unit(s) of <strong>{{ product.name }}</strong>.</p>
+  <p>Price per unit: ₱{{ product.price }}</p>
+  <p>Total: <strong>₱{{ total_price }}</strong></p>
+</div>
+
 
 <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Submit Payment Proof</button>
 </form>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const refInput = document.querySelector('input[name="reference_number"]');
+    if (refInput) {
+      refInput.addEventListener('input', function (e) {
+        // Remove all non-digit characters as user types
+        this.value = this.value.replace(/\D/g, '');
+        // Limit length to 12 digits
+        if (this.value.length > 12) {
+          this.value = this.value.slice(0, 12);
+        }
+      });
+    }
+  });
+</script>
+
 
 {% if messages %}
   <ul class="messages">

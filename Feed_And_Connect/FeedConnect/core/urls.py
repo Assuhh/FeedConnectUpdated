@@ -30,7 +30,9 @@ urlpatterns = [
     path('history1/', views.feed_history1, name= 'feed_history1'),
     path('main_page', views.main_page, name='maine page'),
     path('marketplace/', views.marketplace, name='marketplace'),
-    path('my-profile/', views.seller_profile, name='seller_profile'),
+    path('seller-profile/', views.seller_profile, name='my_seller_profile'),
+    path('seller-profile/<int:seller_id>/', views.seller_profile, name='seller_profile'),
+
     path('my-payments/', views.my_payments, name='my_payments'),
     path('buy-now/<str:item_type>/<int:item_id>/', views.buy_now, name='buy_now'),
     path('payment-success/', views.payment_success, name='payment_success'),

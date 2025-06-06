@@ -1,141 +1,124 @@
 {% extends "base.html" %}
 
+{% block title %}{{ product.name }} - Product Detail{% endblock %}
+
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center py-5" style="min-height: 80vh;">
-    <div class="card shadow-lg rounded-4 p-4 border-0 bg-light" style="max-width: 900px; width: 100%;">
-        <div class="row g-4 align-items-start">
+<div class="container my-5">
+  <div class="card shadow-lg rounded-lg">
+    <div class="card-body p-4">
+      <h1 class="card-title mb-4">{{ product.name }}</h1>
 
-            {% if product.image %}
-            <div class="col-md-5 text-center">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded-3 shadow-sm">
-            </div>
-            {% endif %}
+      {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded mb-4">
+      {% endif %}
 
-            <div class="col-md-7">
-                <h2 class="fw-bold text-primary mb-3">{{ product.name }}</h2>
+      <p><strong>Price:</strong> <span class="text-success fw-bold">₱{{ product.price }}</span></p>
+      <p><strong>Stock:</strong>
+        {% if product.stock > 0 %}
+          <span class="text-success">{{ product.stock }}</span>
+        {% else %}
+          <span class="text-danger">Out of Stock</span>
+        {% endif %}
+      </p>
+      <p><strong>Description:</strong> {{ product.description }}</p>
 
-                <p class="mb-2 text-muted">
-                    <i class="bi bi-person-circle me-1"></i>
-                    <strong>Seller:</strong> {{ product.seller.username }}
-                </p>
+      <div class="mt-4 d-flex gap-2 flex-wrap">
+        <a href="{% url 'marketplace' %}" class="btn btn-outline-secondary">← Return to Marketplace</a>
 
-                <p class="mb-3 text-dark fs-5">
-                    {{ product.description }}
-                </p>
-                {% if seller_profile and seller_profile.location %}
-                    <p><strong>Seller Location:</strong> {{ seller_profile.location }}</p>
-                {% endif %}
-                <p class="mb-2">
-                    <strong>Price:</strong> <span class="text-success fw-bold fs-4">₱{{ product.price }}</span>
-                </p>
+        {% if request.user != product.seller %}
+          <a href="{% url 'send_message' receiver_id=product.seller.id item_type='product' item_id=product.id %}" class="btn btn-primary">
+            <i class="bi bi-chat-dots me-1"></i> Chat Seller
+          </a>
 
-                <p class="mb-2">
-                    <strong>Stock:</strong> 
-                    {% if product.stock > 0 %}
-                        <span class="text-success">{{ product.stock }}</span>
-                    {% else %}
-                        <span class="text-danger">Out of Stock</span>
-                    {% endif %}
-                </p>
-
-                <p>
-                    <strong>Status:</strong>
-                    {% if product.stock == 0 %}
-                        <span class="text-danger fw-bold">Sold</span>
-                    {% else %}
-                        <span class="text-success fw-bold">Selling</span>
-                    {% endif %}
-                </p>
-
-                {% if has_colors %}
-                <div class="mb-3">
-                    <strong>Available Colors:</strong>
-                    <div class="d-flex flex-wrap gap-2 mt-2">
-                        {% for color in color_options %}
-                            <span class="badge rounded-pill bg-secondary text-light px-3 py-2 shadow-sm">
-                                {{ color }}
-                            </span>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if request.GET.buy_now %}
-                    {# Show payment info and buy form #}
-                    <h4>Payment Info</h4>
-                    <p><strong>GCash Name:</strong> {{ product.seller.sellerprofile.gcash_fullname }}</p>
-                    <p><strong>GCash Number:</strong> {{ product.seller.sellerprofile.gcash_number }}</p>
-                    {% if product.seller.sellerprofile.gcash_qr %}
-                        <img src="{{ product.seller.sellerprofile.gcash_qr.url }}" alt="GCash QR Code" width="200">
-                    {% endif %}
-                {% endif %}
-
-                <div class="mt-4 d-flex flex-wrap gap-3">
-                    <a href="{% url 'marketplace' %}" class="btn btn-outline-secondary">
-                        ← Return to Marketplace
-                    </a>
-
-                    {% if request.user != product.seller %}
-                        <a href="{% url 'send_message' receiver_id=product.seller.id item_type='product' item_id=product.id %}" class="btn btn-primary">
-                            <i class="bi bi-chat-dots me-1"></i> Chat Seller
-                        </a>
-
-                        {% if product.stock > 0 %}
-                            {% if request.GET.buy == "true" %}
-                                <!-- Show the buy form -->
-                                <form method="post" action="{% url 'buy_now' 'product' product.id %}" class="mt-3 w-100">
-                                    {% csrf_token %}
-                                    <div class="mb-2">
-                                        <label for="quantity"><strong>Quantity:</strong></label>
-                                        <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" required>
-                                        <small id="stock-warning" class="text-danger" style="display:none;">Quantity exceeds available stock!</small>
-                                    </div>
-                                    <p><strong>Total Price:</strong> ₱<span id="totalPrice">{{ product.price }}</span></p>
-
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="bi bi-credit-card"></i> Proceed to Payment
-                                    </button>
-                                </form>
-                            {% else %}
-                                <!-- Show just the Buy Now button linking to ?buy=true -->
-                                <a href="?buy=true" class="btn btn-success">
-                                    <i class="bi bi-credit-card"></i> Buy Now
-                                </a>
-                            {% endif %}
-                        {% else %}
-                            <button class="btn btn-secondary" disabled>Out of Stock</button>
-                        {% endif %}
-
-                    {% else %}
-                        <a href="{% url 'edit_product' product.id %}" class="btn btn-warning">
-                            <i class="bi bi-pencil-square me-1"></i> Edit Product
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+          {% if product.stock > 0 %}
+            <form method="post" action="{% url 'buy_now' 'product' product.id %}" class="d-inline" id="buyNowForm">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-credit-card"></i> Buy Now
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-secondary" disabled>Out of Stock</button>
+          {% endif %}
+        {% else %}
+          <a href="{% url 'edit_product' product.id %}" class="btn btn-warning">
+            <i class="bi bi-pencil-square me-1"></i> Edit Product
+          </a>
+        {% endif %}
+      </div>
     </div>
+  </div>
+
+  {% if not buy_now_mode %}
+    <!-- Rating -->
+    <div class="card mt-5 shadow-sm" id="ratingSection">
+      <div class="card-body">
+        <h3 class="card-title">Average Rating</h3>
+{% if average_rating %}
+  {% with full_stars=average_rating|floatformat:"0" %}
+  {% with decimal=average_rating|floatformat:"1"|slice:"-1" %}
+    <p>
+      {% for i in "12345"|make_list %}
+        {% if forloop.counter <= full_stars|add:"0" %}
+          <span style="color: #FFD700; font-size: 1.5rem;">&#9733;</span>  {# full star #}
+        {% elif forloop.counter == full_stars|add:"1" and decimal|add:"0" >= 5 %}
+          <span style="color: #FFD700; font-size: 1.5rem;">&#189;</span>  {# half star #}
+        {% else %}
+          <span style="color: #ccc; font-size: 1.5rem;">&#9733;</span>  {# empty star #}
+        {% endif %}
+      {% endfor %}
+      ({{ reviews.count }} review{{ reviews.count|pluralize }})
+    </p>
+  {% endwith %}
+  {% endwith %}
+{% else %}
+  <p>No ratings yet.</p>
+{% endif %}
+      </div>
+    </div>
+
+    <!-- Reviews -->
+    <div class="card mt-4 shadow-sm" id="reviewsSection">
+      <div class="card-body">
+        <h3 class="card-title">Reviews</h3>
+        {% if reviews %}
+          <ul class="list-unstyled">
+            {% for review in reviews %}
+              <li class="mb-3 border-bottom pb-3">
+                <strong>{{ review.user.username }}</strong> –
+                {% for i in "12345"|make_list %}
+                  {% if forloop.counter <= review.rating %}
+                    <span style="color: #FFD700;">&#9733;</span>
+                  {% else %}
+                    <span style="color: #ccc;">&#9733;</span>
+                  {% endif %}
+                {% endfor %}
+                <p>{{ review.comment }}</p>
+                <small class="text-muted">{{ review.created_at|date:"M d, Y H:i" }}</small>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No reviews yet. Be the first to review!</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Review Form -->
+    {% if user.is_authenticated %}
+      <div class="card mt-4 shadow-sm" id="reviewFormSection">
+        <div class="card-body">
+          <h3 class="card-title">Leave a Review</h3>
+          <form method="post">
+            {% csrf_token %}
+            {{ review_form.as_p }}
+            <button type="submit" name="submit_review" class="btn btn-primary">Submit Review</button>
+          </form>
+        </div>
+      </div>
+    {% else %}
+      <p class="mt-3"><a href="{% url 'signin' %}">Sign in</a> to leave a review.</p>
+    {% endif %}
+  {% endif %}
 </div>
-
-<script>
-  const price = parseFloat("{{ product.price|floatformat:2 }}");
-  const stock = parseInt("{{ product.stock }}");
-  const quantityInput = document.getElementById('quantity');
-  const totalPriceEl = document.getElementById('totalPrice');
-  const warningEl = document.getElementById('stock-warning');
-
-  if (quantityInput) {
-    quantityInput.addEventListener('input', () => {
-      const qty = parseInt(quantityInput.value);
-      if (qty > stock) {
-        warningEl.style.display = 'block';
-      } else {
-        warningEl.style.display = 'none';
-      }
-      if (!isNaN(qty)) {
-        totalPriceEl.innerText = (qty * price).toFixed(2);
-      }
-    });
-  }
-</script>
 {% endblock %}

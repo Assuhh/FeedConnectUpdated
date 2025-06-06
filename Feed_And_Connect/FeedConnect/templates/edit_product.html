@@ -5,79 +5,119 @@
 {% block content %}
 <style>
   .edit-container {
-    max-width: 600px;
-    margin: 30px auto;
-    padding: 30px 40px;
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 40px;
+    background: linear-gradient(145deg, #f0f0f0, #ffffff);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
+
   .edit-container h2 {
     text-align: center;
-    margin-bottom: 25px;
     font-weight: 700;
+    font-size: 2rem;
     color: #2c3e50;
-    letter-spacing: 1px;
+    margin-bottom: 30px;
   }
-  .edit-container label {
-    font-weight: 600;
-    color: #34495e;
+
+  .form-group {
+    position: relative;
+    margin-bottom: 25px;
+    color: #000;
   }
-  .edit-container input[type="text"],
-  .edit-container input[type="number"],
-  .edit-container select,
-  .edit-container textarea {
+
+  .form-group label {
+    position: absolute;
+    top: 12px;
+    left: 15px;
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    background-color: #fff;
+    padding: 0 5px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
     width: 100%;
-    padding: 10px 15px;
-    margin-top: 8px;
-    margin-bottom: 20px;
-    border: 1.8px solid #ddd;
-    border-radius: 10px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-    font-family: inherit;
-  }
-  .edit-container input[type="text"]:focus,
-  .edit-container input[type="number"]:focus,
-  .edit-container select:focus,
-  .edit-container textarea:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 6px #007bffaa;
-  }
-  .edit-container button[type="submit"] {
-    display: block;
-    width: 100%;
-    padding: 12px 0;
-    background: linear-gradient(45deg, #1abc9c, #16a085);
-    color: #fff;
-    font-weight: 700;
-    font-size: 1.1rem;
-    border: none;
+    padding: 14px 15px;
+    border: 2px solid #ced4da;
     border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s;
+    background-color: #fff;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: #1abc9c;
+    outline: none;
+  }
+
+  .form-group input:focus + label,
+  .form-group input:not(:placeholder-shown) + label,
+  .form-group textarea:focus + label,
+  .form-group textarea:not(:placeholder-shown) + label,
+  .form-group select:focus + label {
+    top: -8px;
+    font-size: 0.75rem;
+    color: #16a085;
+  }
+
+  .form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .edit-container button[type="submit"] {
+    width: 100%;
+    padding: 14px 0;
+    background: linear-gradient(135deg, #16a085, #1abc9c);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 14px;
     cursor: pointer;
-    box-shadow: 0 5px 15px #16a085aa;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(22, 160, 133, 0.3);
   }
+
   .edit-container button[type="submit"]:hover {
-    background: linear-gradient(45deg, #16a085, #1abc9c);
-    box-shadow: 0 8px 20px #16a085cc;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    box-shadow: 0 8px 25px rgba(22, 160, 133, 0.4);
   }
+
   .errorlist {
     color: #e74c3c;
     font-weight: 600;
-    margin-top: -15px;
-    margin-bottom: 15px;
+    margin-top: 5px;
+    margin-bottom: -15px;
     font-size: 0.9rem;
   }
 </style>
 
 <div class="edit-container">
   <h2>Edit Product</h2>
-  <form method="post" enctype="multipart/form-data" class="edit-product-form">
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form.as_p }}
+
+    {% for field in form %}
+    <div class="form-group">
+      {{ field }}
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {% if field.errors %}
+      <div class="errorlist">{{ field.errors|striptags }}</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
     <button type="submit">Save Changes</button>
   </form>
 </div>

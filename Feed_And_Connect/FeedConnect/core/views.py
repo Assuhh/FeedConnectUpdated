@@ -3,9 +3,9 @@ from django.contrib.auth.models import User, auth
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-from .models import Profile, Post, LikePost, FollowersCount, Comment, Conversation, Message
-from .models import FeedHistory, FeedingSchedule, Product, Service, Message, Conversation, ProductRating, PaymentProof, SellerProfile
-from .forms import ProductForm, ServiceForm, MessageForm, PaymentProofForm, SellerProfileForm
+from .models import Profile, Post, LikePost, FollowersCount, Comment, Conversation, Message,ProductReview
+from .models import FeedHistory, FeedingSchedule, Product, Service, Message, Conversation, ProductRating, PaymentProof, SellerProfile,SellerReview
+from .forms import ProductForm, ServiceForm, MessageForm, PaymentProofForm, SellerProfileForm, ProductReviewForm
 from django.views.decorators.http import require_POST
 from itertools import chain
 from django.core.paginator import Paginator
@@ -20,7 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout as django_logout
-from django.db.models import Q, Max, Count
+from django.db.models import Q, Max, Count, Avg
 from .models import FeedHistory
 from collections import defaultdict
 from django.http import JsonResponse
@@ -432,23 +432,40 @@ def edit_service(request, pk):
 
 #NEW#
 @login_required(login_url='signin')
-def seller_profile(request):
-    profile, created = SellerProfile.objects.get_or_create(user=request.user)
+def seller_profile(request, seller_id=None):
+    # If no seller_id or it's the logged-in user's ID, show/edit own profile
+    if seller_id is None or int(seller_id) == request.user.id:
+        profile, created = SellerProfile.objects.get_or_create(user=request.user)
 
-    if request.method == 'POST':
-        form = SellerProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Your profile has been updated successfully.')
-            return redirect('seller_profile')  # redirect to reload the updated data
-    else:
-        form = SellerProfileForm(instance=profile)
+        if request.method == 'POST':
+            form = SellerProfileForm(request.POST, request.FILES, instance=profile)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Your profile has been updated successfully.')
+                return redirect('seller_profile', seller_id=request.user.id)
+        else:
+            form = SellerProfileForm(instance=profile)
+
+        return render(request, 'seller_profile.html', {
+            'profile_user': request.user,
+            'profile': profile,
+            'form': form,
+            'is_own_profile': True,
+        })
+
+    # Otherwise, show another user's profile in read-only mode
+    seller_user = get_object_or_404(User, id=seller_id)
+    profile = get_object_or_404(SellerProfile, user=seller_user)
+    listings = Product.objects.filter(seller=seller_user)
+    reviews = SellerReview.objects.filter(seller=seller_user)
 
     return render(request, 'seller_profile.html', {
+        'profile_user': seller_user,
         'profile': profile,
-        'form': form,
+        'listings': listings,
+        'reviews': reviews,
+        'is_own_profile': False,
     })
-
 @login_required(login_url='signin')   
 def payment_success(request):
     return render(request, 'payment_success.html')
@@ -628,8 +645,8 @@ def marketplace(request):
     sort_option = request.GET.get('sort', 'date')
     category_filter = request.GET.get('category', '')
 
-    # Products
     products = Product.objects.all()
+
     if query:
         products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
     if category_filter:
@@ -639,7 +656,23 @@ def marketplace(request):
     else:
         products = products.order_by('-created_at')
 
-    # Services
+    # Annotate products with average rating and review count
+    products = products.annotate(avg_rating=Avg('reviews__rating')).annotate(review_count=Avg('reviews__id'))
+
+    # Attach seller profiles and precompute avg_rating_int
+    seller_ids = products.values_list('seller_id', flat=True).distinct()
+    seller_profiles = SellerProfile.objects.filter(user_id__in=seller_ids)
+    profiles_dict = {profile.user_id: profile for profile in seller_profiles}
+
+    for product in products:
+        product.seller_profile = profiles_dict.get(product.seller_id)
+        product.avg_rating_int = int(round(product.avg_rating or 0))
+
+    # Categories combined for filters
+    product_categories = dict(Product.CATEGORY_CHOICES)
+    service_categories = dict(Service.CATEGORY_CHOICES)
+    combined_categories = {**product_categories, **service_categories}
+
     services = Service.objects.all()
     if query:
         services = services.filter(Q(name__icontains=query) | Q(description__icontains=query))
@@ -650,18 +683,7 @@ def marketplace(request):
     else:
         services = services.order_by('-created_at')
 
-    # ✅ Attach SellerProfile after final product filtering
-    seller_ids = products.values_list('seller_id', flat=True).distinct()
-    seller_profiles = SellerProfile.objects.filter(user_id__in=seller_ids)
-    profiles_dict = {profile.user_id: profile for profile in seller_profiles}
-
-    for product in products:
-        product.seller_profile = profiles_dict.get(product.seller_id)
-
-    # Combine categories
-    product_categories = dict(Product.CATEGORY_CHOICES)
-    service_categories = dict(Service.CATEGORY_CHOICES)
-    combined_categories = {**product_categories, **service_categories}
+    stars = range(1, 6)
 
     return render(request, 'marketplace.html', {
         'products': products,
@@ -670,8 +692,8 @@ def marketplace(request):
         'selected_category': category_filter,
         'sort_option': sort_option,
         'categories': combined_categories,
+        'stars': stars,
     })
-
 
 @login_required
 def rate_product(request, product_id):
@@ -742,21 +764,28 @@ def my_listings(request):
 # 🔁 Helper function to get or create a conversation between exactly two users
 @login_required(login_url='signin')
 def inbox(request):
-    # Get all messages involving the user, newest first
+    from django.db.models import Q
+
+    # Get messages involving the current user
     messages = Message.objects.filter(
         Q(sender=request.user) | Q(conversation__participants=request.user)
     ).order_by('-timestamp')
 
-    # Track latest message per conversation
     seen_conversations = set()
     latest_messages = []
 
     for msg in messages:
         if msg.conversation_id not in seen_conversations:
+            # Only mark as unread if the current user is the receiver
+            msg.is_unread = (msg.receiver == request.user and not getattr(msg, 'read', False))
             latest_messages.append(msg)
             seen_conversations.add(msg.conversation_id)
 
-    return render(request, 'inbox.html', {'latest_messages': latest_messages})
+    return render(request, 'inbox.html', {
+        'latest_messages': latest_messages,
+        'current_conversation_id': None,
+    })
+
 
 @login_required(login_url='signin')
 def conversation_detail(request, conversation_id):
@@ -869,21 +898,37 @@ def send_message(request, receiver_id, item_type, item_id):
     })
 
 
-@login_required(login_url='signin')
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    # fetch seller profile if exists
-    try:
-        seller_profile = SellerProfile.objects.get(user=product.seller)
-    except SellerProfile.DoesNotExist:
-        seller_profile = None
+    buy_now_mode = request.GET.get('buy_now') == '1'
+
+    # Only fetch reviews if not in buy_now mode
+    if not buy_now_mode:
+        reviews = product.reviews.all().order_by('-created_at')
+        average_rating = reviews.aggregate(avg=Avg('rating'))['avg']
+    else:
+        reviews = []
+        average_rating = None
+
+    if request.method == 'POST' and 'submit_review' in request.POST:
+        review_form = ProductReviewForm(request.POST)
+        if review_form.is_valid():
+            review = review_form.save(commit=False)
+            review.product = product
+            review.user = request.user
+            review.save()
+            return redirect('product_detail', pk=product.id)
+    else:
+        review_form = ProductReviewForm()
 
     context = {
         'product': product,
-        'seller_profile': seller_profile,
+        'reviews': reviews,
+        'average_rating': round(average_rating, 1) if average_rating else None,
+        'review_form': review_form,
+        'buy_now_mode': buy_now_mode,
     }
     return render(request, 'product_detail.html', context)
-
 
 @login_required(login_url='signin')
 def service_detail(request, pk):

@@ -1,11 +1,21 @@
 from django import forms
-from .models import Product, Service, Message, SellerProfile, PaymentProof
+from .models import Product, Service, Message, SellerProfile, PaymentProof,ProductReview
+from django.core.validators import RegexValidator
 
 class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
         fields = ['name', 'description', 'price', 'stock', 'image', 'category']  # Ensure 'category' and 'location' are included
+        
+class ProductReviewForm(forms.ModelForm):
+    class Meta:
+        model = ProductReview
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.NumberInput(attrs={'min': 1, 'max': 5}),
+            'comment': forms.Textarea(attrs={'rows': 3}),
+        }
 
 class ServiceForm(forms.ModelForm):
     class Meta:
@@ -35,17 +45,22 @@ class SellerProfileForm(forms.ModelForm):
 class PaymentProofForm(forms.ModelForm):
     reference_number = forms.CharField(
         required=True,
+        max_length=12,
+        validators=[RegexValidator(r'^\d{1,12}$', message="Reference number must be 1 to 12 digits.")],
         widget=forms.TextInput(attrs={
             'required': 'required',
             'placeholder': 'Enter your payment reference number',
             'class': 'form-control',
-        })
+            'maxlength': '12',
+            'inputmode': 'numeric',  # mobile devices show numeric keypad
+            'pattern': r'\d{1,12}',  # restrict input to digits only
+            'title': 'Enter up to 12 digits only',
+        }),
     )
 
     class Meta:
         model = PaymentProof
-        fields = ['screenshot', 'reference_number']  # include screenshot here
-
+        fields = ['reference_number', 'screenshot']
         widgets = {
             'screenshot': forms.ClearableFileInput(attrs={
                 'class': 'form-control',
@@ -56,5 +71,13 @@ class PaymentProofForm(forms.ModelForm):
         model = PaymentProof
         fields = ['reference_number', 'screenshot']
         widgets = {
-            'screenshot': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'screenshot': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+            }),
         }
+
+    def clean_reference_number(self):
+        ref = self.cleaned_data.get('reference_number')
+        if ref and len(ref) > 12:
+            raise forms.ValidationError("Reference number must be at most 12 characters.")
+        return ref

@@ -7,6 +7,12 @@
     .active-conversation {
         border-left: 3px solid #007bff;
     }
+    .unread-message {
+        background-color: #87CEFA !important; /* Blue */
+        color: #ffffff; 
+        font-weight: bold;
+        border-left: 6px solid #a4f4a1;
+    }
 </style>
 <div class="container" style="padding: 2rem;">
     <h2 style="color: #fff;">Inbox</h2>
@@ -15,8 +21,13 @@
     <ul style="list-style: none; padding: 0;">
         {% for msg in latest_messages %}
             <li style="margin-bottom: 10px;">
-                <div class="message-item {% if msg.conversation.id == conversation.id %}active-conversation{% endif %}" style="padding: 10px; border-radius: 6px; background-color: #f8f9fa;">
-                    <strong style="color: #000;">Conversation with 
+                <div class="message-item
+    {% if msg.conversation.id == current_conversation_id %} active-conversation{% endif %}
+    {% if msg.is_unread %} unread-message{% endif %}"
+    style="padding: 10px; border-radius: 6px; background-color: #fff;">
+
+
+                    <strong style="color: #0E3386;">Conversation with 
                         {% for participant in msg.conversation.participants.all %}
                             {% if participant != request.user %}
                                 {{ participant.username }}{% if not forloop.last %}, {% endif %}
@@ -24,19 +35,17 @@
                         {% endfor %}
                     </strong><br>
                     <small>
-                        <span style="color: #000;">{{ msg.sender.username }}:</span>
-                        <span style="color: #333333;">{{ msg.content|truncatechars:30 }}</span>
-                        </small>
+                        <span style="color: #0E3386;">{{ msg.sender.username }}:</span>
+                        <span style="color: #0E3386;">{{ msg.content|truncatechars:30 }}</span>
+                    </small>
                 </div>
-
-                    
-                    <!-- Wrap the button in an <a> tag to create a link to the conversation page -->
-                    <a href="{% url 'conversation_detail' conversation_id=msg.conversation.id %}">
-                        <button style="margin-top: 5px; padding: 4px 8px; font-size: 12px; background-color: gray; color: #fff; border: none; border-radius: 4px; ">
-                            View Conversation
-                        </button>
-                    </a>
-                </div>
+                
+                <!-- Link to conversation detail -->
+                <a href="{% url 'conversation_detail' conversation_id=msg.conversation.id %}">
+                    <button style="margin-top: 5px; padding: 4px 8px; font-size: 12px; background-color: gray; color: #fff; border: none; border-radius: 4px;">
+                        View Conversation
+                    </button>
+                </a>
             </li>
         {% endfor %}
     </ul>

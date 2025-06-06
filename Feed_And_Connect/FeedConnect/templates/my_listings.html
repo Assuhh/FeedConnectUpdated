@@ -3,43 +3,144 @@
 
 {% block content %}
 <style>
-.product-card {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            border: 2px solid transparent;
-            background-clip: padding-box;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            will-change: transform;
-        }
+  .product-card {
+    position: relative;
+    height: 460px;
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        }
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .product-info {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-info h5 {
+    color: #000;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .product-info p {
+    color: #000;
+    font-size: 14px;
+    margin-bottom: 0.4rem;
+    overflow: hidden;
+  }
+
+  .product-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    transition: font-size 0.3s ease;
+  }
+
+  .card-footer {
+    margin-top: auto;
+  }
+
+  /* Image container to position overlay text */
+  .image-container {
+    position: relative;
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  /* Overlay text */
+  .click-to-view-text {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Show text on hover */
+  .image-container:hover .click-to-view-text {
+    opacity: 1;
+  }
+
+  /* Modal styles */
+  .modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1050; 
+    padding-top: 100px; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.7); 
+  }
+
+  .modal-content {
+    max-width: 600px;
+    max-height: 80vh;
+    margin: auto;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+    overflow: hidden;
+  }
+
+  .modal-content img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+  }
+
+  .close {
+    position: absolute;
+    top: 60px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.3s ease;
+  }
+  .close:hover {
+    color: #bbb;
+  }
 </style>
 
 <div class="container mt-4">
   <h1 class="text-center mb-4" style="color: #fff; font-weight: bold;">My Listings</h1>
 
-  <!-- My Products Section -->
   <h3 style="color: #fff; font-weight: bold;">Products</h3>
   <div class="row">
     {% for product in products %}
     <div class="col-md-4 mb-4">
-      <div class="product-card" style="
-          position: relative;
-          border-radius: 12px;
-          overflow: hidden;
-          padding: 1rem;
-          background: rgba(255, 255, 255, 0.15);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-          border: 2px solid transparent;
-          background-clip: padding-box;
-        ">
+      <div class="product-card">
         <div style="
             content: '';
             position: absolute;
@@ -49,17 +150,29 @@
             bottom: -2px;
             z-index: -1;
             background: linear-gradient(135deg, white, gray);
-            border-radius: 14px;
-          "></div>
+            border-radius: 14px;"></div>
 
         {% if product.image %}
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+        <div class="image-container" data-image-url="{{ product.image.url }}">
+          <img 
+            src="{{ product.image.url }}" 
+            alt="{{ product.name }}" 
+            style="width: 100%; height: 200px; object-fit: cover;"
+            class="clickable-image"
+            >
+          <div class="click-to-view-text">Click to view</div>
+        </div>
         {% endif %}
-        <div style="margin-top: 1rem;">
-          <h5 style="color: #000; font-weight: bold;">{{ product.name }}</h5>
-          <p style="color: #000;">{{ product.description|truncatewords:15 }}</p>
-          <p style="color: #000;">Price: ₱{{ product.price }}</p>
-          <p style="color: #000;">Stock: {{ product.stock }}</p>
+
+        <div class="product-info mt-3">
+          <h5>{{ product.name }}</h5>
+          <p class="product-description">{{ product.description }}</p>
+          <p>Price: ₱{{ product.price }}</p>
+          <p>Stock: {{ product.stock }}</p>
+        </div>
+
+        <div class="card-footer">
+          <a href="{% url 'edit_product' product.id %}" class="btn w-100 mt-2" style="background-color: #fff; color: black;">Edit</a>
         </div>
       </div>
     </div>
@@ -67,47 +180,56 @@
     <p style="color: #fff;">You have not posted any products.</p>
     {% endfor %}
   </div>
-
-  {% comment %} <!-- My Services Section -->
-  <h3 style="color: #fff; font-weight: bold; margin-top: 2rem;">My Services</h3>
-  <div class="row">
-    {% for service in services %}
-    <div class="col-md-4 mb-4">
-      <div class="product-card" style="
-          position: relative;
-          border-radius: 12px;
-          overflow: hidden;
-          padding: 1rem;
-          background: rgba(255, 255, 255, 0.15);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-          border: 2px solid transparent;
-          background-clip: padding-box;
-        ">
-        <div style="
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            z-index: -1;
-            background: linear-gradient(135deg, white, gray);
-            border-radius: 14px;
-          "></div>
-
-        {% if service.image %}
-        <img src="{{ service.image.url }}" alt="{{ service.title }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
-        {% endif %}
-        <div style="margin-top: 1rem;">
-          <h5 style="color: #000; font-weight: bold;">{{ service.title }}</h5>
-          <p style="color: #000;">{{ service.description|truncatewords:15 }}</p>
-          <p style="color: #000;">Price: ₱{{ service.price }}</p>
-        </div>
-      </div>
-    </div>
-    {% empty %}
-    <p style="color: #fff;">You have not posted any services.</p>
-    {% endfor %}
-  </div> {% endcomment %}
 </div>
+
+<!-- Modal HTML -->
+<div id="imageModal" class="modal">
+  <span class="close">&times;</span>
+  <div class="modal-content">
+    <img id="modalImage" src="" alt="Product Image" />
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const cards = document.querySelectorAll(".product-card");
+
+    cards.forEach(card => {
+      const info = card.querySelector(".product-info");
+      const description = card.querySelector(".product-description");
+      if (!info || !description) return;
+
+      description.style.fontSize = "14px";
+      if (info.scrollHeight > info.clientHeight) {
+        description.style.fontSize = "12px";
+      }
+    });
+
+    // Modal functionality
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+    const closeBtn = document.querySelector(".modal .close");
+
+    document.querySelectorAll(".image-container").forEach(container => {
+      container.addEventListener("click", function () {
+        const imageUrl = this.dataset.imageUrl;
+        modal.style.display = "block";
+        modalImg.src = imageUrl;
+        modalImg.alt = "Product Image";
+      });
+    });
+
+    closeBtn.onclick = function () {
+      modal.style.display = "none";
+      modalImg.src = "";
+    };
+
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+        modalImg.src = "";
+      }
+    };
+  });
+</script>
 {% endblock %}

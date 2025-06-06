@@ -1,36 +1,200 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Pending Payment Confirmations</h2>
+<style>
+  .payments-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  h2 {
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .payment-item {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .payment-info {
+    flex: 1 1 300px;
+    color: #374151;
+  }
+  .payment-info h5 {
+    margin-bottom: 0.3rem;
+    color: #111827;
+  }
+  .payment-info p {
+    margin: 0.2rem 0;
+    font-size: 15px;
+  }
+  .payment-screenshot {
+    flex: 0 0 220px;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  .qr-image-wrapper, /* reusing styles from QR */
+  .payment-screenshot .click-to-view-wrapper {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+  .payment-screenshot img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 10px;
+    display: block;
+    transition: transform 0.2s ease;
+  }
+  .payment-screenshot .click-to-view {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.75rem;      /* slightly smaller font */
+  padding: 0.1rem 0.4rem; /* thinner/smaller padding */
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none;
+  user-select: none;
+}
 
-{% if payments %}
-  <ul class="list-group">
+  .payment-screenshot .click-to-view-wrapper:hover .click-to-view {
+    opacity: 1;
+  }
+  .payment-screenshot .click-to-view-wrapper:hover img {
+    transform: scale(1.05);
+  }
+  .no-screenshot {
+    font-style: italic;
+    color: #6b7280;
+    margin-bottom: 1rem;
+  }
+  .confirm-btn {
+    display: block;
+    margin: 1rem auto 0;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    width: 160px;
+    transition: background 0.3s ease;
+  }
+  .confirm-btn:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+  }
+  .no-payments {
+    color: #6b7280;
+    font-style: italic;
+    text-align: center;
+    margin-top: 3rem;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 600px) {
+    .payment-item {
+      flex-direction: column;
+      align-items: center;
+    }
+    .payment-info, .payment-screenshot {
+      flex: 1 1 100%;
+      text-align: center;
+    }
+    .confirm-btn {
+      width: 100%;
+      max-width: 300px;
+    }
+  }
+
+  /* Modal styles */
+  #imageModal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+  }
+
+  #imageModal img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.5);
+    cursor: zoom-out;
+  }
+</style>
+
+<div class="payments-container">
+  <h2>Pending Payment Confirmations</h2>
+
+  {% if payments %}
     {% for payment in payments %}
-      <li class="list-group-item">
-        <div>
-          <strong>{{ payment.item_type|title }} #{{ payment.item_id }}</strong> from 
-          <em>{{ payment.buyer.username }}</em><br>
-          Buyer: {{ payment.buyer.username }}  <br>
-          Reference #: {{ payment.reference_number }}
+      <li class="payment-item list-unstyled">
+        <div class="payment-info">
+          <h5>{{ payment.item_type|title }} #{{ payment.item_id }}</h5>
+          <p><strong>Buyer:</strong> {{ payment.buyer.username }}</p>
+          <p><strong>Reference #:</strong> {{ payment.reference_number }}</p>
         </div>
-        <div class="d-flex align-items-center mt-2">
+
+        <div class="payment-screenshot">
           {% if payment.screenshot %}
-            <a href="{{ payment.screenshot.url }}" target="_blank" class="me-3">
-              <img src="{{ payment.screenshot.url }}" alt="Payment Screenshot"
-                   style="max-width: 200px; max-height: 200px; border: 1px solid #ccc;" />
-            </a>
+            <div class="click-to-view-wrapper" onclick="openImageModal('{{ payment.screenshot.url }}')" title="Click to view">
+              <img src="{{ payment.screenshot.url }}" alt="Payment Screenshot" loading="lazy" />
+              <div class="click-to-view">Click to view</div>
+            </div>
           {% else %}
-            <em class="me-3">No screenshot uploaded.</em>
+            <p class="no-screenshot">No screenshot uploaded.</p>
           {% endif %}
-          <form action="{% url 'confirm_payment' payment.id %}" method="post" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-primary btn-sm">Confirm Payment</button>
-        </form>
+
+          <form action="{% url 'confirm_payment' payment.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="confirm-btn">Confirm Payment</button>
+          </form>
         </div>
       </li>
     {% endfor %}
-  </ul>
-{% else %}
-  <p>No payments pending confirmation.</p>
-{% endif %}
+  {% else %}
+    <p class="no-payments">No payments pending confirmation.</p>
+  {% endif %}
+</div>
+
+<!-- Modal for large image view -->
+<div id="imageModal" onclick="closeImageModal()">
+  <img id="modalImage" src="" alt="Payment Screenshot Large View">
+</div>
+
+<script>
+  function openImageModal(url) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    modalImg.src = url;
+    modal.style.display = 'flex';
+  }
+
+  function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    modal.style.display = 'none';
+    modalImg.src = '';
+  }
+</script>
 {% endblock %}
