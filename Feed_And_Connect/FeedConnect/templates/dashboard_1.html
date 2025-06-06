@@ -151,10 +151,10 @@
     <div>
         <a href="{% url 'dashboard_1' %}" class="btn-style"><span>Control</span></a>
         <a href="{% url 'index' %}" class="btn-style"><span>Social Media</span></a>
-        <a href="{% url 'marketplace' %}" class="btn-style"><span>E-Commerce</span></a>
+        <a href="{% url 'marketplace' %}" class="btn-style"><span>Feed-Commerce</span></a>
         <a href="{% url 'feed_history1' %}" class="btn-style"><span>Feed History</span></a>
         <a href="{% url 'feed_history' %}" class="btn-style"><span>BMI</span></a>
-        {% comment %} <a href="{% url 'logout' %}" class="btn-style"><span>Logout</span></a> {% endcomment %}
+        <a href="{% url 'logout' %}" class="btn-style"><span>Logout</span></a> 
     </div>
 </div>
 
@@ -179,8 +179,11 @@
             <div class="status-card">
                 <h5>Next Feeding</h5>
                 <div class="next-feeding" id="nextFeeding">
-                {{ next_feeding_time }} 
-                {% if last_portion %} — {{ last_portion }}g{% endif %}
+                {% if next_feeding_time %}
+                    {{ next_feeding_time|date:"g:i A" }}{% if last_portion %} — {{ last_portion }}g{% endif %}
+                {% else %}
+                      No feeding scheduled
+                {% endif %}
             </div>
 
                 <small class="text-white">
@@ -212,16 +215,25 @@
         {% csrf_token %}
 
         <!-- Portion Size -->
-        <div class="status-card mb-4">
-            <label for="portion" class="form-label">🥣 Portion Size</label>
-            <div id="portionValueLabel">Selected: {{ last_portion }}g</div>
-            <input type="range" id="portion" name="portion" min="10" max="500" value="{{ last_portion }}" 
-                    class="form-range slider" oninput="updatePortionLabel()">
-            <div class="d-flex justify-content-between text-small text-white mt-1">
-                <span>10g</span>
-                <span>500g</span>
-            </div>
-        </div>
+<div class="status-card mb-4">
+    <label for="portion" class="form-label">🥣 Portion Size</label>
+    <div id="portionValueLabel">Selected: {{ last_portion }}g</div>
+
+    <input
+        type="range"
+        id="portion"
+        name="portion"
+        min="10"
+        max="500"
+        value="{{ last_portion }}"
+        class="form-range slider"
+    >
+
+    <div class="d-flex justify-content-between text-small text-white mt-1">
+        <span>10g</span>
+        <span>500g</span>
+    </div>
+</div>
 
         <!-- Feed Now -->
         {% comment %} <form method="post"> {% endcomment %}
@@ -326,7 +338,7 @@
 {{ feeding_times|json_script:"feeding-times-data" }}
 
 <script>
-(function() {
+(function () {
     // Feeding times from Django context
     const feedingTimes = JSON.parse(document.getElementById('feeding-times-data').textContent);
     let lastTriggered = null;
@@ -335,7 +347,7 @@
         if (!document.getElementById('schedule_toggle').checked) return;
 
         const now = new Date();
-        const currentTimeStr = now.toTimeString().slice(0,5);
+        const currentTimeStr = now.toTimeString().slice(0, 5);
 
         if (feedingTimes.includes(currentTimeStr)) {
             if (lastTriggered !== currentTimeStr) {
@@ -355,28 +367,28 @@
         const feedingModal = new bootstrap.Modal(document.getElementById('feedingModal'));
         feedingModal.show();
 
-        document.getElementById('confirmFeedBtn').onclick = function() {
-    feedingModal.hide();
-    submitScheduledFeedForm();  // This triggers the actual feeding on device
-    
-    // Now also log this feeding in the FeedHistory
-    const portion = document.getElementById('scheduledPortionInput').value;
+        document.getElementById('confirmFeedBtn').onclick = function () {
+            feedingModal.hide();
+            submitScheduledFeedForm();  // Triggers actual feeding
 
-    fetch('/record-scheduled-feed/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ amount: portion })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Scheduled feed recorded:', data);
-    })
-    .catch(error => {
-        console.error('Error recording scheduled feed:', error);
-    });
-}
+            const portion = document.getElementById('scheduledPortionInput').value;
+
+            fetch('/record-scheduled-feed/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ amount: portion })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Scheduled feed recorded:', data);
+                })
+                .catch(error => {
+                    console.error('Error recording scheduled feed:', error);
+                });
+        }
+    }
 
     function submitScheduledFeedForm() {
         const form = document.getElementById('scheduleFeedForm');
@@ -390,31 +402,24 @@
             },
             body: new URLSearchParams(new FormData(form))
         })
-        .then(response => {
-            if (response.ok) {
-                alert('Scheduled feeding logged successfully!');
-            } else {
-                alert('Error logging scheduled feeding.');
-            }
-        })
-        .catch(() => alert('Network error while logging feeding.'));
-    }
-    }
-
-    function updatePortionLabel() {
-        const portionSlider = document.getElementById("portion");
-        const label = document.getElementById("portionValueLabel");
-        label.innerHTML = `Selected: ${portionSlider.value}g`;
+            .then(response => {
+                if (response.ok) {
+                    alert('Scheduled feeding logged successfully!');
+                } else {
+                    alert('Error logging scheduled feeding.');
+                }
+            })
+            .catch(() => alert('Network error while logging feeding.'));
     }
 
-    // Update label on page load (in case last_portion is null or missing)
-    window.addEventListener('DOMContentLoaded', () => {
-        updatePortionLabel();
-    });
+    function updatePortionLabel(value) {
+        const label = document.getElementById('portionValueLabel');
+        label.innerText = 'Selected: ' + value + 'g';
+    }
 
     function updateScheduleStatus() {
-        var toggle = document.getElementById('schedule_toggle');
-        var status = document.getElementById('scheduleStatus');
+        const toggle = document.getElementById('schedule_toggle');
+        const status = document.getElementById('scheduleStatus');
         if (toggle.checked) {
             status.textContent = 'ON';
             status.className = 'text-success';
@@ -426,15 +431,15 @@
     }
 
     function updateSchedulePreview() {
-        var times = [];
-        var isActive = document.getElementById('schedule_toggle').checked;
-        for (var i = 1; i <= 4; i++) {
-            var timeInput = document.getElementById('schedule_time' + i);
+        const times = [];
+        const isActive = document.getElementById('schedule_toggle').checked;
+        for (let i = 1; i <= 4; i++) {
+            const timeInput = document.getElementById('schedule_time' + i);
             if (timeInput.value) {
                 times.push(timeInput.value);
             }
         }
-        var previewText = document.getElementById('previewText');
+        const previewText = document.getElementById('previewText');
         if (!isActive) {
             previewText.textContent = 'Schedule is OFF - no automatic feeding';
             previewText.className = 'text-warning';
@@ -448,14 +453,14 @@
     }
 
     function confirmFeed() {
-        var portion = document.getElementById('portion').value;
+        const portion = document.getElementById('portion').value;
         return confirm('Feed ' + portion + 'g now?');
     }
 
     function setLoading(isLoading) {
-        var form = document.getElementById('feederForm');
-        var feedButton = document.getElementById('feedButton');
-        var saveButton = document.getElementById('saveButton');
+        const form = document.getElementById('feederForm');
+        const feedButton = document.getElementById('feedButton');
+        const saveButton = document.getElementById('saveButton');
         if (isLoading) {
             form.classList.add('loading');
             feedButton.disabled = true;
@@ -471,24 +476,31 @@
         }
     }
 
+    document.addEventListener("DOMContentLoaded", function () {
+        const slider = document.getElementById('portion');
+        if (slider) {
+            updatePortionLabel(slider.value); // Initialize label
+
+            slider.addEventListener('input', function () {
+                updatePortionLabel(this.value); // Update label in real time
+            });
+        }
+
+        updateScheduleStatus();
+        updateSchedulePreview();
+    });
+
     document.getElementById('feederForm').addEventListener('submit', function () {
         setLoading(true);
     });
 
-    window.onload = function () {
-        updatePortionLabel();
-        updateScheduleStatus();
-        updateSchedulePreview();
-    };
-
     setInterval(checkScheduledFeeding, 30000);
+
     setInterval(function () {
         if (document.getElementById('schedule_toggle').checked) {
             console.log('Would refresh next feeding time');
         }
     }, 60000);
+
 })();
 </script>
-</div>
-</body>
-</html>

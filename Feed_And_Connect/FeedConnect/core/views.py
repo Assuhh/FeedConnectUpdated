@@ -243,7 +243,6 @@ def dashboard_1(request):
     success_messages = []
 
     if request.method == 'POST':
-        # Handle portion size
         portion = request.POST.get('portion', '50')
         try:
             portion = int(portion)
@@ -252,26 +251,22 @@ def dashboard_1(request):
         except (ValueError, TypeError):
             portion = 50
 
-        # Handle feed now (manual feed)
         if 'feed_now' in request.POST:
             print(f"Feed now requested with portion: {portion}")
-            
+
             pin_value_pairs = [
-                ('V1', portion),  # Set portion size
-                ('V0', 1)         # Trigger feed
+                ('V1', portion),
+                ('V0', 1)
             ]
-            
+
             results = send_multiple_to_blynk(pin_value_pairs, delay_between=1.0)
-            
+
             if all(result[1] for result in results):
-                # ✅ Save manual feeding to FeedHistory
                 FeedHistory.objects.create(feed_type='manual', amount=portion)
                 success_messages.append(f"Dispensed {portion} grams successfully.")
             else:
                 failed_pins = [pin for pin, success in results if not success]
                 error_messages.append(f"Failed to send to Blynk pins: {failed_pins}. Please try again.")
-
-        # Handle feeding schedule update
         else:
             print("Processing schedule update...")
 
@@ -302,7 +297,7 @@ def dashboard_1(request):
 
             is_active = request.POST.get('schedule_toggle') == '1'
             schedule.is_active = is_active
-            
+
             print(f"Schedule active: {is_active}")
             print(f"Feeding times: {feeding_times_input}")
 
@@ -326,7 +321,6 @@ def dashboard_1(request):
             else:
                 success_messages.append("Schedule updated successfully on device.")
 
-    # Prepare dashboard context
     feeding_times = [
         schedule.feeding_time1 or '',
         schedule.feeding_time2 or '',
@@ -337,14 +331,44 @@ def dashboard_1(request):
     active_count = sum(1 for t in feeding_times if t)
     last_feed = FeedHistory.objects.filter(feed_type='manual').order_by('-timestamp').first()
     last_portion = last_feed.amount if last_feed else 70
-    next_feeding_time = get_next_feeding_time(feeding_times, schedule.is_active)
+
+    # Convert next feeding time string(s) to datetime.time objects for 12-hour display
+    def get_next_feeding_time_obj(feeding_times, is_active):
+        if not is_active:
+            return None
+
+        now = datetime.now().time()
+        future_times = []
+
+        for t in feeding_times:
+            if t:
+                try:
+                    parsed_time = datetime.strptime(t, '%H:%M').time()
+                    if parsed_time > now:
+                        future_times.append(parsed_time)
+                except ValueError:
+                    continue
+
+        if future_times:
+            return min(future_times)
+        else:
+            valid_times = []
+            for t in feeding_times:
+                if t:
+                    try:
+                        valid_times.append(datetime.strptime(t, '%H:%M').time())
+                    except ValueError:
+                        continue
+            return min(valid_times) if valid_times else None
+
+    next_feeding_time = get_next_feeding_time_obj(feeding_times, schedule.is_active)
 
     context = {
         'feeding_times': feeding_times,
         'schedule_active': schedule.is_active,
         'last_portion': last_portion,
         'schedule_count': active_count,
-        'next_feeding_time': next_feeding_time,
+        'next_feeding_time': next_feeding_time,  # This is a datetime.time object now
     }
 
     for msg in success_messages:
