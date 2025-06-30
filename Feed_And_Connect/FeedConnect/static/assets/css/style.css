@@ -2678,7 +2678,7 @@ header .uk-dropdown {
 }
 
 .blue-button {
-  background-color: #212529; /* Deep navy blue */
+  background-color: #126b79; /* Deep navy blue */
   color: white;
   padding: 0.75rem 1.5rem; /* py-3 px-6 */
   border-radius: 0.375rem; /* rounded-md */
@@ -2689,7 +2689,7 @@ header .uk-dropdown {
 }
 
 .blue-button:hover {
-  background-color: #6c757d; /* Slightly lighter blue on hover */
+  background-color: #39a2b1; /* Slightly lighter blue on hover */
   color: white;
 }
 
